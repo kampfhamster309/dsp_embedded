@@ -28,3 +28,8 @@ human_to_do.md
 
 # Docker build cache
 docker/dsp-counterpart/__pycache__/
+
+# Test certificates (generated locally, never committed)
+docker/certs/*.pem
+docker/certs/*.key
+docker/certs/*.crt
