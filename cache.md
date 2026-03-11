@@ -2,8 +2,8 @@
 
 ## Current State
 
-**Last completed ticket:** DSP-002 – Define compile-time feature flags
-**Next ticket:** DSP-003 – Set up host-native build target
+**Last completed ticket:** DSP-003 – Set up host-native build target
+**Next ticket:** DSP-004 – Integrate Unity test framework
 
 ## Project Structure
 
@@ -13,7 +13,13 @@ dsp_embedded/
 ├── main/CMakeLists.txt
 ├── components/
 │   └── dsp_config/           # Feature flags: Kconfig + dsp_config.h
-├── test/                     # Empty – Unity tests added in DSP-004
+├── test/
+│   ├── CMakeLists.txt        # Host-native standalone CMake project
+│   ├── test_main.c           # Placeholder main(); replaced in DSP-004
+│   └── stubs/                # ESP-IDF header shims for host builds
+│       ├── esp_log.h         # ESP_LOG* → fprintf
+│       ├── esp_err.h         # esp_err_t, ESP_OK/FAIL
+│       └── freertos/         # FreeRTOS type stubs
 ├── doc/
 │   ├── deviation_log.md      # DEV-001, DEV-002, DEV-003 documented
 │   └── compatibility_matrix.md  # Stub, filled in M7
@@ -29,6 +35,10 @@ dsp_embedded/
 
 - **ESP-IDF v5.5.3** installed at `~/esp/esp-idf`. Source with: `source ~/esp/esp-idf/export.sh`
 - `idf.py` is not on PATH by default — invoke via `python /home/cyphus309/esp/esp-idf/tools/idf.py` or source export.sh first.
+- **Host build is in `test/`**, run with: `cd test && cmake -B build && cmake --build build && ctest --test-dir build`
+- `DSP_HOST_BUILD=1` is defined for host builds; `ESP_PLATFORM` is intentionally absent so `dsp_config.h` skips `sdkconfig.h`
+- `test/CMakeLists.txt` auto-discovers `components/*/include` — new components need no edits to the host build file
+- `test/build/` is gitignored; `test/test_main.c` is tracked (replaced by Unity runner in DSP-004)
 - **Preprocessor string comparisons are invalid in `#if`**: `CONFIG_DSP_DAPS_GATEWAY_URL[0] == '\0'` caused a build error — string literals cannot be used in preprocessor expressions. Removed; Kconfig `depends on` handles the constraint instead.
 - Two sdkconfig.defaults keys were renamed in IDF v5.x: `CONFIG_ESP32S3_DEFAULT_CPU_FREQ_240` → `CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240` and `CONFIG_ESP32S3_SPIRAM_SUPPORT` → `CONFIG_SPIRAM`. Fixed.
 - `human_to_do.md` is excluded from git via `.gitignore` (user preference).
