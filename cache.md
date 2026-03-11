@@ -26,7 +26,9 @@ dsp_embedded/
 
 ## Gotchas and Learnings
 
-- **ESP-IDF not installed** on this machine. All build verification requires human action. See `human_to_do.md`.
+- **ESP-IDF v5.5.3** installed at `~/esp/esp-idf`. Source with: `source ~/esp/esp-idf/export.sh`
+- `idf.py` is not on PATH by default — invoke via `python /home/cyphus309/esp/esp-idf/tools/idf.py` or source export.sh first.
+- Two sdkconfig.defaults keys were renamed in IDF v5.x: `CONFIG_ESP32S3_DEFAULT_CPU_FREQ_240` → `CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240` and `CONFIG_ESP32S3_SPIRAM_SUPPORT` → `CONFIG_SPIRAM`. Fixed.
 - `human_to_do.md` is excluded from git via `.gitignore` (user preference).
 - `cache.md` is tracked in git (it's part of the agent workflow).
 - Git default branch is `master` on this machine (not `main`).
