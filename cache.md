@@ -2,8 +2,8 @@
 
 ## Current State
 
-**Last completed ticket:** DSP-001 – Initialize ESP-IDF project
-**Next ticket:** DSP-002 – Define compile-time feature flags
+**Last completed ticket:** DSP-002 – Define compile-time feature flags
+**Next ticket:** DSP-003 – Set up host-native build target
 
 ## Project Structure
 
@@ -11,7 +11,8 @@
 dsp_embedded/
 ├── main/main.c               # Minimal app_main entry point
 ├── main/CMakeLists.txt
-├── components/               # Empty – components added per milestone
+├── components/
+│   └── dsp_config/           # Feature flags: Kconfig + dsp_config.h
 ├── test/                     # Empty – Unity tests added in DSP-004
 ├── doc/
 │   ├── deviation_log.md      # DEV-001, DEV-002, DEV-003 documented
@@ -28,6 +29,7 @@ dsp_embedded/
 
 - **ESP-IDF v5.5.3** installed at `~/esp/esp-idf`. Source with: `source ~/esp/esp-idf/export.sh`
 - `idf.py` is not on PATH by default — invoke via `python /home/cyphus309/esp/esp-idf/tools/idf.py` or source export.sh first.
+- **Preprocessor string comparisons are invalid in `#if`**: `CONFIG_DSP_DAPS_GATEWAY_URL[0] == '\0'` caused a build error — string literals cannot be used in preprocessor expressions. Removed; Kconfig `depends on` handles the constraint instead.
 - Two sdkconfig.defaults keys were renamed in IDF v5.x: `CONFIG_ESP32S3_DEFAULT_CPU_FREQ_240` → `CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240` and `CONFIG_ESP32S3_SPIRAM_SUPPORT` → `CONFIG_SPIRAM`. Fixed.
 - `human_to_do.md` is excluded from git via `.gitignore` (user preference).
 - `cache.md` is tracked in git (it's part of the agent workflow).
