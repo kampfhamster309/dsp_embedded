@@ -1,5 +1,8 @@
 # ESP-IDF build artifacts
 build/
+
+# Host-native test build
+test/build/
 sdkconfig
 sdkconfig.old
 dependencies.lock
@@ -19,3 +22,6 @@ managed_components/
 # OS
 .DS_Store
 Thumbs.db
+
+# Local human action items – not tracked in git
+human_to_do.md

@@ -11,8 +11,9 @@ See [development_plan.md](development_plan.md) for the implementation roadmap.
 
 ## Requirements
 
-- [ESP-IDF](https://github.com/espressif/esp-idf) v5.2 or later
+- [ESP-IDF](https://github.com/espressif/esp-idf) v5.5 or later (firmware build)
 - Target hardware: ESP32-S3 (4 MB flash minimum)
+- CMake ≥ 3.16, GCC ≥ 13 (host-native build and unit tests)
 
 ## Building
 
@@ -46,5 +47,9 @@ dsp_embedded/
 
 ```sh
 cd test
-cmake -B build && cmake --build build && ./build/dsp_test_runner
+cmake -B build && cmake --build build
+./build/dsp_test_runner
+
+# Or via CTest
+cmake --build build && ctest --test-dir build --output-on-failure
 ```
