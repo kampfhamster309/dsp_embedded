@@ -2,8 +2,8 @@
 
 ## Current State
 
-**Last completed ticket:** DSP-003 – Set up host-native build target
-**Next ticket:** DSP-004 – Integrate Unity test framework
+**Last completed ticket:** DSP-004 – Integrate Unity test framework
+**Next ticket:** DSP-005 – Set up Docker-based EDC counterpart
 
 ## Project Structure
 
@@ -15,7 +15,9 @@ dsp_embedded/
 │   └── dsp_config/           # Feature flags: Kconfig + dsp_config.h
 ├── test/
 │   ├── CMakeLists.txt        # Host-native standalone CMake project
-│   ├── test_main.c           # Placeholder main(); replaced in DSP-004
+│   ├── test_main.c           # Unity runner: UNITY_BEGIN/END + RUN_TEST calls
+│   ├── test_smoke.c          # 15 smoke tests (pipeline + dsp_config defaults)
+│   ├── unity/                # git submodule: ThrowTheSwitch/Unity v2.6.0
 │   └── stubs/                # ESP-IDF header shims for host builds
 │       ├── esp_log.h         # ESP_LOG* → fprintf
 │       ├── esp_err.h         # esp_err_t, ESP_OK/FAIL
@@ -35,6 +37,8 @@ dsp_embedded/
 
 - **ESP-IDF v5.5.3** installed at `~/esp/esp-idf`. Source with: `source ~/esp/esp-idf/export.sh`
 - `idf.py` is not on PATH by default — invoke via `python /home/cyphus309/esp/esp-idf/tools/idf.py` or source export.sh first.
+- **Unity submodule**: `test/unity` pinned to v2.6.0. Init with `git submodule update --init test/unity`. CMakeLists.txt emits FATAL_ERROR if missing.
+- **Adding tests**: add `test_<component>.c`, declare externs in `test_main.c`, add `RUN_TEST()` calls, add source to `add_executable(dsp_test_runner ...)` in CMakeLists.txt.
 - **Host build is in `test/`**, run with: `cd test && cmake -B build && cmake --build build && ctest --test-dir build`
 - `DSP_HOST_BUILD=1` is defined for host builds; `ESP_PLATFORM` is intentionally absent so `dsp_config.h` skips `sdkconfig.h`
 - `test/CMakeLists.txt` auto-discovers `components/*/include` — new components need no edits to the host build file
