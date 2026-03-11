@@ -5,6 +5,10 @@ A lean [Dataspace Protocol (DSP)](https://docs.internationaldataspaces.org/ids-k
 See [target.md](target.md) for full project description and design constraints.
 See [development_plan.md](development_plan.md) for the implementation roadmap.
 
+## License
+
+Apache License 2.0 — see [LICENSE](LICENSE).
+
 ## Status
 
 ⚠️ Under development — see `development_plan.md` for progress.
