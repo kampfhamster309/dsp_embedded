@@ -25,3 +25,6 @@ Thumbs.db
 
 # Local human action items – not tracked in git
 human_to_do.md
+
+# Docker build cache
+docker/dsp-counterpart/__pycache__/

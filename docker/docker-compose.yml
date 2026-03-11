@@ -1,0 +1,72 @@
+# DSP Embedded – Integration Test Environment
+#
+# Services:
+#   dsp-counterpart  Minimal DSP consumer mock (Python/FastAPI).
+#                    Drives catalog, negotiation and transfer flows against
+#                    the DSP Embedded node under test.
+#
+#   dsp-embedded     Placeholder service representing the firmware running
+#                    on a local host-native build or on-device.
+#                    Swap the image/command for the actual target in CI.
+#
+# Usage:
+#   docker compose up -d
+#   docker compose logs -f
+#   docker compose down
+#
+# Verified with Docker Compose v5.1.0
+
+services:
+
+  # -------------------------------------------------------------------------
+  # DSP Counterpart – consumer mock
+  # Implemented in docker/dsp-counterpart/ (Python + FastAPI).
+  # Does not require any external identity infrastructure.
+  # -------------------------------------------------------------------------
+  dsp-counterpart:
+    build:
+      context: ./dsp-counterpart
+      dockerfile: Dockerfile
+    image: dsp-counterpart:local
+    container_name: dsp-counterpart
+    restart: unless-stopped
+    ports:
+      - "18000:8000"     # Management / test control API
+    environment:
+      # Override if the provider node is not at the default address
+      PROVIDER_DSP_URL: "http://host.docker.internal:80"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # Reach host-native build from container
+    healthcheck:
+      test: ["CMD", "python3", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    networks:
+      - dsp-test
+
+  # -------------------------------------------------------------------------
+  # DSP Embedded stub – represents the firmware node under test.
+  #
+  # In the integration test workflow the node runs as a HOST-NATIVE binary
+  # on port 80 (or another configured port). The counterpart reaches it via
+  # host.docker.internal. This stub service is a placeholder for CI pipelines
+  # where the node is started separately before compose up.
+  #
+  # To test against the real firmware on an ESP32-S3 over USB/UART-WiFi:
+  # set PROVIDER_DSP_URL to the device's IP instead.
+  # -------------------------------------------------------------------------
+  # dsp-embedded:
+  #   image: dsp-embedded-host:latest   # built by the CI pipeline
+  #   container_name: dsp-embedded
+  #   ports:
+  #     - "80:80"
+  #   networks:
+  #     - dsp-test
+
+networks:
+  dsp-test:
+    name: dsp-test
+    driver: bridge
