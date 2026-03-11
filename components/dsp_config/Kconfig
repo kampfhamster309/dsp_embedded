@@ -1,0 +1,119 @@
+menu "DSP Embedded Configuration"
+
+    config DSP_ENABLE_CATALOG_REQUEST
+        bool "Enable dynamic catalog request endpoint (POST /catalog/request)"
+        default n
+        help
+            Enables the POST /catalog/request endpoint (DSP priority: SHOULD).
+            Allows counterparts to query the catalog with filter parameters
+            instead of always receiving the full static catalog.
+            Adds ~2 KB RAM overhead. Disable to save memory on highly
+            constrained builds.
+
+    config DSP_ENABLE_CONSUMER
+        bool "Enable consumer role (node can request data from others)"
+        default n
+        help
+            Activates consumer-side DSP endpoints so the node can initiate
+            contract negotiations and data transfers toward other connectors.
+            Not included in the initial provider-only release scope.
+            Adds significant code and RAM overhead — only enable if the
+            application requires the node to pull data from remote peers.
+
+    config DSP_ENABLE_DAPS_SHIM
+        bool "Enable DAPS gateway compatibility shim"
+        default n
+        help
+            Enables a forwarding shim that proxies identity token requests
+            to a configured external DAPS/OAuth2 gateway. Use this when the
+            counterpart requires full DAPS-issued tokens and a gateway is
+            available in the deployment.
+            Requires DSP_DAPS_GATEWAY_URL to be set.
+
+    config DSP_DAPS_GATEWAY_URL
+        string "DAPS gateway URL"
+        default ""
+        depends on DSP_ENABLE_DAPS_SHIM
+        help
+            Base URL of the DAPS gateway to proxy token requests to.
+            Example: https://daps.example.org
+            Only used when DSP_ENABLE_DAPS_SHIM is enabled.
+
+    config DSP_TLS_SESSION_TICKETS
+        bool "Enable TLS session ticket resumption"
+        default y
+        help
+            Enables TLS 1.3 session tickets to reduce handshake overhead
+            on reconnection. Particularly valuable for battery-powered nodes
+            that disconnect between transfers. Requires mbedTLS session ticket
+            support (CONFIG_MBEDTLS_SSL_SESSION_TICKETS).
+            Disable only if the counterpart does not support session tickets.
+
+    config DSP_PSRAM_ENABLE
+        bool "Enable external PSRAM for larger buffers"
+        default n
+        help
+            Allocates large buffers (TLS I/O, HTTP body, JSON payloads) in
+            external PSRAM instead of internal SRAM. Requires an ESP32-S3
+            module with 8 MB PSRAM populated and CONFIG_SPIRAM enabled.
+            Without PSRAM the total DSP Embedded footprint must stay ≤130 KB
+            internal RAM; with PSRAM this constraint is relaxed for heap
+            allocations.
+
+    config DSP_DEEP_SLEEP_BETWEEN_TX
+        bool "Enter deep sleep between data transfers"
+        default n
+        help
+            Enables the power management logic that puts the node into deep
+            sleep after completing a transfer and wakes it on a timer or
+            external interrupt for the next cycle. State (catalog, active
+            negotiations) is preserved in RTC memory across sleep cycles.
+            Reduces average current from ~120 mA to ~20 µA during idle.
+            Disable for always-on deployments or during development/debugging.
+
+    config DSP_ENABLE_NEGOTIATE_TERMINATE
+        bool "Enable negotiation termination endpoint (POST /negotiations/terminate)"
+        default n
+        help
+            Enables the POST /negotiations/terminate endpoint (DSP priority:
+            MAY). Allows either party to abort an in-progress negotiation.
+            Adds minimal overhead but is not required for basic provider
+            operation.
+
+    config DSP_MAX_CONCURRENT_NEGOTIATIONS
+        int "Maximum concurrent negotiations"
+        default 4
+        range 1 16
+        help
+            Maximum number of contract negotiations the node tracks
+            simultaneously. Each negotiation consumes approximately 256 bytes
+            of RAM from the DSP state machine budget. Reduce to 1 on very
+            tight builds; increase only if PSRAM is available.
+
+    config DSP_MAX_CONCURRENT_TRANSFERS
+        int "Maximum concurrent transfers"
+        default 2
+        range 1 8
+        help
+            Maximum number of simultaneous active transfers. Each transfer
+            context consumes approximately 512 bytes. The default of 2 is
+            appropriate for most sensor node deployments.
+
+    config DSP_HTTP_PORT
+        int "HTTP server port"
+        default 80
+        range 1 65535
+        help
+            TCP port the DSP HTTP/1.1 server listens on. Use 443 when TLS
+            is enforced end-to-end. Port 80 is acceptable in deployments
+            where TLS termination is handled by a reverse proxy.
+
+    config DSP_LOG_LEVEL_VERBOSE
+        bool "Enable verbose DSP protocol logging"
+        default n
+        help
+            Logs full request/response bodies and state machine transitions.
+            Useful during development and integration testing. Disable in
+            production to reduce flash usage and serial I/O overhead.
+
+endmenu
