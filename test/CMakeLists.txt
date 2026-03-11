@@ -81,6 +81,8 @@ target_include_directories(dsp_embedded_host PUBLIC
 add_executable(dsp_test_runner
     test_main.c
     test_smoke.c
+    test_dsp_tls.c
+    "${ROOT_DIR}/components/dsp_mbedtls/dsp_tls.c"
 )
 
 target_link_libraries(dsp_test_runner PRIVATE

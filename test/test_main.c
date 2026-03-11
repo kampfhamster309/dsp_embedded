@@ -28,6 +28,19 @@ extern void test_config_verbose_log_default(void);
 extern void test_config_daps_gateway_url_default(void);
 
 /* -------------------------------------------------------------------------
+ * test_dsp_tls.c
+ * ------------------------------------------------------------------------- */
+extern void test_tls_ctx_sizeof_is_nonzero(void);
+extern void test_tls_ctx_zero_init_initialized_is_false(void);
+extern void test_tls_ctx_initialized_field_accessible(void);
+extern void test_tls_init_returns_invalid_arg_for_null_ctx(void);
+extern void test_tls_init_returns_fail_on_host(void);
+extern void test_tls_deinit_safe_on_null(void);
+extern void test_tls_deinit_clears_initialized(void);
+extern void test_tls_esp_platform_absent_in_host_build(void);
+extern void test_tls_host_build_flag_set(void);
+
+/* -------------------------------------------------------------------------
  * main
  * ------------------------------------------------------------------------- */
 int main(void)
@@ -52,6 +65,17 @@ int main(void)
     RUN_TEST(test_config_http_port_default);
     RUN_TEST(test_config_verbose_log_default);
     RUN_TEST(test_config_daps_gateway_url_default);
+
+    /* dsp_tls */
+    RUN_TEST(test_tls_ctx_sizeof_is_nonzero);
+    RUN_TEST(test_tls_ctx_zero_init_initialized_is_false);
+    RUN_TEST(test_tls_ctx_initialized_field_accessible);
+    RUN_TEST(test_tls_init_returns_invalid_arg_for_null_ctx);
+    RUN_TEST(test_tls_init_returns_fail_on_host);
+    RUN_TEST(test_tls_deinit_safe_on_null);
+    RUN_TEST(test_tls_deinit_clears_initialized);
+    RUN_TEST(test_tls_esp_platform_absent_in_host_build);
+    RUN_TEST(test_tls_host_build_flag_set);
 
     return UNITY_END();
 }
