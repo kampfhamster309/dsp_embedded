@@ -2,8 +2,8 @@
 
 ## Current State
 
-**Last completed ticket:** DSP-004 – Integrate Unity test framework
-**Next ticket:** DSP-005 – Set up Docker-based EDC counterpart
+**Last completed ticket:** DSP-005 – Set up Docker-based DSP integration test counterpart
+**Next ticket:** DSP-006 – Create initial README and doc structure
 
 ## Project Structure
 
@@ -25,6 +25,15 @@ dsp_embedded/
 ├── doc/
 │   ├── deviation_log.md      # DEV-001, DEV-002, DEV-003 documented
 │   └── compatibility_matrix.md  # Stub, filled in M7
+├── docker/
+│   ├── docker-compose.yml    # dsp-counterpart service on port 18000
+│   ├── dsp-counterpart/      # Python/FastAPI DSP consumer mock
+│   │   ├── main.py           # DSP endpoints + /api/test/* control API
+│   │   ├── requirements.txt  # fastapi, uvicorn, httpx
+│   │   └── Dockerfile        # python:3.12-slim
+│   ├── certs/                # Local test certs (gitignored, *.pem)
+│   └── seed/
+│       └── seed-test-data.sh # Health check + catalog probe
 ├── tools/                    # Empty – provisioning scripts added in M8
 ├── CMakeLists.txt            # Top-level ESP-IDF project file
 ├── partitions.csv            # NVS, phy, factory, dsp_certs, storage (4 MB)
@@ -37,6 +46,9 @@ dsp_embedded/
 
 - **ESP-IDF v5.5.3** installed at `~/esp/esp-idf`. Source with: `source ~/esp/esp-idf/export.sh`
 - `idf.py` is not on PATH by default — invoke via `python /home/cyphus309/esp/esp-idf/tools/idf.py` or source export.sh first.
+- **Tractus-X EDC (all versions 0.7.7–0.12.0) requires a full Catena-X DCP/STS/BDRS stack** to boot — not suitable for minimal integration testing. Use the Python mock instead.
+- **DSP counterpart**: `cd docker && docker compose up -d` → healthy in <10 s on port 18000. Control API at `/api/test/*`.
+- **Private keys must never be committed** — even test keys. Use `docker/certs/` (gitignored for *.pem) and regenerate locally.
 - **Unity submodule**: `test/unity` pinned to v2.6.0. Init with `git submodule update --init test/unity`. CMakeLists.txt emits FATAL_ERROR if missing.
 - **Adding tests**: add `test_<component>.c`, declare externs in `test_main.c`, add `RUN_TEST()` calls, add source to `add_executable(dsp_test_runner ...)` in CMakeLists.txt.
 - **Host build is in `test/`**, run with: `cd test && cmake -B build && cmake --build build && ctest --test-dir build`
