@@ -39,3 +39,4 @@ docker/certs/*.crt
 # key and cert stay in sync (cert is signed by the key; regenerating
 # the key without regenerating the cert would break the pair).
 components/dsp_identity/certs/*.der
+cache.md
