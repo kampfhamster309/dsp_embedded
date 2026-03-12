@@ -115,11 +115,27 @@ dsp_jwt_err_t dsp_jwt_parse_exp(const uint8_t *json, size_t len,
  * expiry in the future, ECDSA P-256 signature (ESP_PLATFORM only).
  *
  * @param jwt            NUL-terminated compact JWT string.
- * @param pubkey_der     DER-encoded EC public key.
+ * @param pubkey_der     DER-encoded EC public key (SubjectPublicKeyInfo).
  * @param pubkey_der_len Length of @p pubkey_der in bytes (must be > 0).
  * @return DSP_JWT_OK on success, or a DSP_JWT_ERR_* code.
  */
 dsp_jwt_err_t dsp_jwt_validate_es256(const char *jwt,
+                                      const uint8_t *pubkey_der,
+                                      size_t pubkey_der_len);
+
+/**
+ * Validate an RS256 JWT token (RSA PKCS#1 v1.5 + SHA-256).
+ *
+ * Verifies: structure, algorithm (must be RS256), expiry, and RSA-PKCS1v15
+ * signature over the header.payload signing input.  Supports RSA-2048 and
+ * RSA-4096 key sizes (up to 512-byte signature).
+ *
+ * @param jwt            NUL-terminated compact JWT string.
+ * @param pubkey_der     DER-encoded RSA public key (SubjectPublicKeyInfo).
+ * @param pubkey_der_len Length of @p pubkey_der in bytes (must be > 0).
+ * @return DSP_JWT_OK on success, or a DSP_JWT_ERR_* code.
+ */
+dsp_jwt_err_t dsp_jwt_validate_rs256(const char *jwt,
                                       const uint8_t *pubkey_der,
                                       size_t pubkey_der_len);
 

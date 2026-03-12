@@ -3,9 +3,10 @@
  * @brief JWT validation implementation.
  *
  * Platform-agnostic helpers (split, base64url decode, alg/exp parsing) are
- * always compiled for host-native testing.  The ES256 structural checks
- * (argument validation, format, algorithm, expiry) are also always compiled.
- * The mbedTLS ECDSA signature verification is ESP_PLATFORM-only.
+ * always compiled for host-native testing.  Structural checks (argument
+ * validation, format, algorithm, expiry) are also always compiled via the
+ * shared jwt_check_structure() helper.  Signature verification is
+ * ESP_PLATFORM-only; host stubs return DSP_JWT_ERR_CRYPTO.
  */
 
 #include "dsp_jwt.h"
@@ -150,9 +151,10 @@ dsp_jwt_err_t dsp_jwt_parse_exp(const uint8_t *json, size_t len,
  * Returns DSP_JWT_OK if all pre-crypto checks pass.
  * ========================================================================= */
 
-static dsp_jwt_err_t jwt_check_structure(const char    *jwt,
-                                          const uint8_t *pubkey_der,
-                                          size_t         pubkey_der_len,
+static dsp_jwt_err_t jwt_check_structure(const char      *jwt,
+                                          const uint8_t   *pubkey_der,
+                                          size_t           pubkey_der_len,
+                                          dsp_jwt_alg_t    expected_alg,
                                           dsp_jwt_parts_t *parts)
 {
     if (!jwt || !pubkey_der || pubkey_der_len == 0) return DSP_JWT_ERR_INVALID_ARG;
@@ -164,7 +166,7 @@ static dsp_jwt_err_t jwt_check_structure(const char    *jwt,
     int hdr_len = dsp_jwt_base64url_decode(parts->header, parts->header_len,
                                             hdr_buf, sizeof(hdr_buf));
     if (hdr_len < 0) return DSP_JWT_ERR_DECODE;
-    if (dsp_jwt_parse_alg(hdr_buf, (size_t)hdr_len) != DSP_JWT_ALG_ES256) {
+    if (dsp_jwt_parse_alg(hdr_buf, (size_t)hdr_len) != expected_alg) {
         return DSP_JWT_ERR_INVALID_ALG;
     }
 
@@ -238,7 +240,8 @@ dsp_jwt_err_t dsp_jwt_validate_es256(const char    *jwt,
                                       size_t         pubkey_der_len)
 {
     dsp_jwt_parts_t parts;
-    dsp_jwt_err_t err = jwt_check_structure(jwt, pubkey_der, pubkey_der_len, &parts);
+    dsp_jwt_err_t err = jwt_check_structure(jwt, pubkey_der, pubkey_der_len,
+                                             DSP_JWT_ALG_ES256, &parts);
     if (err != DSP_JWT_OK) return err;
 
     /* Decode the raw R||S signature – must be exactly 64 bytes for P-256 */
@@ -281,14 +284,72 @@ dsp_jwt_err_t dsp_jwt_validate_es256(const char    *jwt,
     return DSP_JWT_OK;
 }
 
-#else /* !ESP_PLATFORM – host-native stub */
+dsp_jwt_err_t dsp_jwt_validate_rs256(const char    *jwt,
+                                      const uint8_t *pubkey_der,
+                                      size_t         pubkey_der_len)
+{
+    dsp_jwt_parts_t parts;
+    dsp_jwt_err_t err = jwt_check_structure(jwt, pubkey_der, pubkey_der_len,
+                                             DSP_JWT_ALG_RS256, &parts);
+    if (err != DSP_JWT_OK) return err;
+
+    /* Decode the RSA signature (256 bytes for RSA-2048, 512 for RSA-4096) */
+    uint8_t sig_buf[512];
+    int sig_len = dsp_jwt_base64url_decode(parts.sig, parts.sig_len,
+                                            sig_buf, sizeof(sig_buf));
+    if (sig_len <= 0) return DSP_JWT_ERR_INVALID_FORMAT;
+
+    /* SHA-256 of the signing input: "<header_b64url>.<payload_b64url>" */
+    size_t signing_len = (size_t)(parts.payload + parts.payload_len - jwt);
+    uint8_t digest[32];
+    mbedtls_sha256((const unsigned char *)jwt, signing_len, digest, 0);
+
+    /* Load public key and verify */
+    mbedtls_pk_context pk;
+    mbedtls_pk_init(&pk);
+    int ret = mbedtls_pk_parse_public_key(&pk,
+                                           (const unsigned char *)pubkey_der,
+                                           pubkey_der_len);
+    if (ret != 0) {
+        ESP_LOGW(TAG, "rs256 pk_parse_public_key failed: -0x%04x", (unsigned)-ret);
+        mbedtls_pk_free(&pk);
+        return DSP_JWT_ERR_CRYPTO;
+    }
+
+    ret = mbedtls_pk_verify(&pk, MBEDTLS_MD_SHA256,
+                             digest, sizeof(digest),
+                             sig_buf, (size_t)sig_len);
+    mbedtls_pk_free(&pk);
+
+    if (ret != 0) {
+        ESP_LOGW(TAG, "rs256 pk_verify failed: -0x%04x", (unsigned)-ret);
+        return DSP_JWT_ERR_CRYPTO;
+    }
+    return DSP_JWT_OK;
+}
+
+#else /* !ESP_PLATFORM – host-native stubs */
 
 dsp_jwt_err_t dsp_jwt_validate_es256(const char    *jwt,
                                       const uint8_t *pubkey_der,
                                       size_t         pubkey_der_len)
 {
     dsp_jwt_parts_t parts;
-    dsp_jwt_err_t err = jwt_check_structure(jwt, pubkey_der, pubkey_der_len, &parts);
+    dsp_jwt_err_t err = jwt_check_structure(jwt, pubkey_der, pubkey_der_len,
+                                             DSP_JWT_ALG_ES256, &parts);
+    if (err != DSP_JWT_OK) return err;
+
+    /* All pre-crypto checks passed; crypto is unavailable on host */
+    return DSP_JWT_ERR_CRYPTO;
+}
+
+dsp_jwt_err_t dsp_jwt_validate_rs256(const char    *jwt,
+                                      const uint8_t *pubkey_der,
+                                      size_t         pubkey_der_len)
+{
+    dsp_jwt_parts_t parts;
+    dsp_jwt_err_t err = jwt_check_structure(jwt, pubkey_der, pubkey_der_len,
+                                             DSP_JWT_ALG_RS256, &parts);
     if (err != DSP_JWT_OK) return err;
 
     /* All pre-crypto checks passed; crypto is unavailable on host */

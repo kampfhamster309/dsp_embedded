@@ -2,8 +2,8 @@
 
 ## Current State
 
-**Last completed ticket:** DSP-202 – JWT validation ES256 (dsp_jwt)
-**Next ticket:** DSP-203 – JWT validation RS256
+**Last completed ticket:** DSP-203 – JWT validation RS256 (dsp_jwt)
+**Next ticket:** DSP-204 – PSK mode
 
 ## Project Structure
 
@@ -84,7 +84,7 @@ dsp_embedded/
 - Two sdkconfig.defaults keys were renamed in IDF v5.x: `CONFIG_ESP32S3_DEFAULT_CPU_FREQ_240` → `CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240` and `CONFIG_ESP32S3_SPIRAM_SUPPORT` → `CONFIG_SPIRAM`. Fixed.
 - `human_to_do.md` is excluded from git via `.gitignore` (user preference).
 - `cache.md` is tracked in git (it's part of the agent workflow).
-- **dsp_jwt**: `dsp_jwt_validate_es256(jwt, pubkey_der, len)`. Always-compiled helpers: `dsp_jwt_split()`, `dsp_jwt_base64url_decode()`, `dsp_jwt_parse_alg()`, `dsp_jwt_parse_exp()`. ESP_PLATFORM: SHA-256 + ECDSA P-256 verify via mbedTLS; raw R||S (64 bytes) → DER SEQUENCE via `rs_to_der()` (prepend 0x00 if MSB set). Host `#else`: structural + expiry checks pass, returns `DSP_JWT_ERR_CRYPTO`. Error codes: OK=0, INVALID_ARG=-1, INVALID_FORMAT=-2, INVALID_ALG=-3, EXPIRED=-4, NO_EXP=-5, DECODE=-6, CRYPTO=-7.
+- **dsp_jwt**: `dsp_jwt_validate_es256()` and `dsp_jwt_validate_rs256()`. Shared `jwt_check_structure(jwt, key, len, expected_alg, parts)` validates args → format → alg → expiry for both. Always-compiled helpers: `dsp_jwt_split()`, `dsp_jwt_base64url_decode()`, `dsp_jwt_parse_alg()`, `dsp_jwt_parse_exp()`. ES256 ESP_PLATFORM: SHA-256 + ECDSA P-256; raw R||S (64 bytes) → DER via `rs_to_der()`. RS256 ESP_PLATFORM: SHA-256 + RSA-PKCS1v15; raw sig bytes (≤512) passed directly to `mbedtls_pk_verify()`. Host `#else`: both return `DSP_JWT_ERR_CRYPTO` after pre-crypto checks. Error codes: OK=0, INVALID_ARG=-1, INVALID_FORMAT=-2, INVALID_ALG=-3, EXPIRED=-4, NO_EXP=-5, DECODE=-6, CRYPTO=-7.
 - **dsp_jwt exp field**: uses `uint64_t` to handle `exp=9999999999` (year 2286) without uint32 overflow. `parse_exp` does simple string search for `"exp":` and parses decimal integer.
 - **dsp_jwt base64url decode**: RFC 4648 §5; no padding; processes 4-char groups → 3 bytes; trailing 2 chars → 1 byte, 3 chars → 2 bytes; 1 trailing char is invalid (-1). Returns decoded byte count or -1.
 - Git default branch is `master` on this machine (not `main`).

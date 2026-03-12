@@ -187,6 +187,15 @@ extern void test_jwt_validate_expired_returns_expired(void);
 extern void test_jwt_validate_no_exp_returns_no_exp(void);
 extern void test_jwt_validate_valid_format_host_returns_crypto(void);
 extern void test_jwt_esp_platform_absent_in_host_build(void);
+extern void test_jwt_rs256_alg_enum_distinct_from_es256(void);
+extern void test_jwt_rs256_validate_null_jwt_returns_invalid_arg(void);
+extern void test_jwt_rs256_validate_null_pubkey_returns_invalid_arg(void);
+extern void test_jwt_rs256_validate_zero_len_pubkey_returns_invalid_arg(void);
+extern void test_jwt_rs256_validate_malformed_returns_invalid_format(void);
+extern void test_jwt_rs256_validate_es256_alg_returns_invalid_alg(void);
+extern void test_jwt_rs256_validate_expired_returns_expired(void);
+extern void test_jwt_rs256_validate_no_exp_returns_no_exp(void);
+extern void test_jwt_rs256_validate_valid_format_host_returns_crypto(void);
 
 /* -------------------------------------------------------------------------
  * main
@@ -360,6 +369,17 @@ int main(void)
     RUN_TEST(test_jwt_validate_no_exp_returns_no_exp);
     RUN_TEST(test_jwt_validate_valid_format_host_returns_crypto);
     RUN_TEST(test_jwt_esp_platform_absent_in_host_build);
+
+    /* dsp_jwt RS256 (DSP-203) */
+    RUN_TEST(test_jwt_rs256_alg_enum_distinct_from_es256);
+    RUN_TEST(test_jwt_rs256_validate_null_jwt_returns_invalid_arg);
+    RUN_TEST(test_jwt_rs256_validate_null_pubkey_returns_invalid_arg);
+    RUN_TEST(test_jwt_rs256_validate_zero_len_pubkey_returns_invalid_arg);
+    RUN_TEST(test_jwt_rs256_validate_malformed_returns_invalid_format);
+    RUN_TEST(test_jwt_rs256_validate_es256_alg_returns_invalid_alg);
+    RUN_TEST(test_jwt_rs256_validate_expired_returns_expired);
+    RUN_TEST(test_jwt_rs256_validate_no_exp_returns_no_exp);
+    RUN_TEST(test_jwt_rs256_validate_valid_format_host_returns_crypto);
 
     return UNITY_END();
 }

@@ -45,11 +45,16 @@
 #define NOEXP_PAYLOAD "eyJzdWIiOiJkc3AtdGVzdCIsImlhdCI6MTAwMDAwMDAwMH0"
 #define FAKE_SIG      "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 
-/* Full JWTs */
+/* Full JWTs – ES256 */
 #define VALID_JWT    ES256_HEADER "." VALID_PAYLOAD "." FAKE_SIG
 #define EXPIRED_JWT  ES256_HEADER "." EXPD_PAYLOAD  "." FAKE_SIG
 #define NOEXP_JWT    ES256_HEADER "." NOEXP_PAYLOAD "." FAKE_SIG
 #define RS256_JWT    RS256_HEADER "." VALID_PAYLOAD "." FAKE_SIG
+
+/* Full JWTs – RS256 */
+#define RS256_VALID_JWT    RS256_HEADER "." VALID_PAYLOAD "." FAKE_SIG
+#define RS256_EXPIRED_JWT  RS256_HEADER "." EXPD_PAYLOAD  "." FAKE_SIG
+#define RS256_NOEXP_JWT    RS256_HEADER "." NOEXP_PAYLOAD "." FAKE_SIG
 
 /* Minimal non-zero DER buffer – host stub never dereferences it */
 static const uint8_t s_dummy_key[] = {0x30u, 0x00u};
@@ -341,4 +346,75 @@ void test_jwt_esp_platform_absent_in_host_build(void)
     TEST_FAIL_MESSAGE("ESP_PLATFORM must not be defined in host builds");
 #endif
     TEST_PASS();
+}
+
+/* -------------------------------------------------------------------------
+ * dsp_jwt_validate_rs256() tests  (DSP-203)
+ *
+ * RS256 = RSA PKCS#1 v1.5 + SHA-256.  The signing/structural logic is
+ * identical to ES256; the difference is the algorithm tag in the header
+ * and that the signature is raw RSA bytes (no R||S→DER step needed).
+ * Host stub exercises all pre-crypto checks and returns DSP_JWT_ERR_CRYPTO.
+ * ------------------------------------------------------------------------- */
+
+void test_jwt_rs256_alg_enum_distinct_from_es256(void)
+{
+    TEST_ASSERT_NOT_EQUAL(DSP_JWT_ALG_ES256, DSP_JWT_ALG_RS256);
+}
+
+void test_jwt_rs256_validate_null_jwt_returns_invalid_arg(void)
+{
+    TEST_ASSERT_EQUAL(DSP_JWT_ERR_INVALID_ARG,
+                      dsp_jwt_validate_rs256(NULL,
+                                              s_dummy_key, sizeof(s_dummy_key)));
+}
+
+void test_jwt_rs256_validate_null_pubkey_returns_invalid_arg(void)
+{
+    TEST_ASSERT_EQUAL(DSP_JWT_ERR_INVALID_ARG,
+                      dsp_jwt_validate_rs256(RS256_VALID_JWT, NULL, 1));
+}
+
+void test_jwt_rs256_validate_zero_len_pubkey_returns_invalid_arg(void)
+{
+    TEST_ASSERT_EQUAL(DSP_JWT_ERR_INVALID_ARG,
+                      dsp_jwt_validate_rs256(RS256_VALID_JWT, s_dummy_key, 0));
+}
+
+void test_jwt_rs256_validate_malformed_returns_invalid_format(void)
+{
+    TEST_ASSERT_EQUAL(DSP_JWT_ERR_INVALID_FORMAT,
+                      dsp_jwt_validate_rs256("notajwt",
+                                              s_dummy_key, sizeof(s_dummy_key)));
+}
+
+void test_jwt_rs256_validate_es256_alg_returns_invalid_alg(void)
+{
+    /* VALID_JWT has ES256 in the header – RS256 validator must reject it */
+    TEST_ASSERT_EQUAL(DSP_JWT_ERR_INVALID_ALG,
+                      dsp_jwt_validate_rs256(VALID_JWT,
+                                              s_dummy_key, sizeof(s_dummy_key)));
+}
+
+void test_jwt_rs256_validate_expired_returns_expired(void)
+{
+    /* exp=1000000001 (Sep 2001) is always in the past */
+    TEST_ASSERT_EQUAL(DSP_JWT_ERR_EXPIRED,
+                      dsp_jwt_validate_rs256(RS256_EXPIRED_JWT,
+                                              s_dummy_key, sizeof(s_dummy_key)));
+}
+
+void test_jwt_rs256_validate_no_exp_returns_no_exp(void)
+{
+    TEST_ASSERT_EQUAL(DSP_JWT_ERR_NO_EXP,
+                      dsp_jwt_validate_rs256(RS256_NOEXP_JWT,
+                                              s_dummy_key, sizeof(s_dummy_key)));
+}
+
+void test_jwt_rs256_validate_valid_format_host_returns_crypto(void)
+{
+    /* exp=9999999999 (year 2286): not expired.  Host stub returns CRYPTO. */
+    TEST_ASSERT_EQUAL(DSP_JWT_ERR_CRYPTO,
+                      dsp_jwt_validate_rs256(RS256_VALID_JWT,
+                                              s_dummy_key, sizeof(s_dummy_key)));
 }
