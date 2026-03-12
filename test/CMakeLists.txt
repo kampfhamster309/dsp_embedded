@@ -82,6 +82,7 @@ add_executable(dsp_test_runner
     test_main.c
     test_smoke.c
     test_dsp_tls.c
+    test_dsp_tls_tickets.c
     "${ROOT_DIR}/components/dsp_mbedtls/dsp_tls.c"
     test_dsp_http.c
     "${ROOT_DIR}/components/dsp_http/dsp_http.c"
@@ -99,10 +100,39 @@ target_include_directories(dsp_test_runner PRIVATE
 )
 
 # ---------------------------------------------------------------------------
+# dsp_test_no_tickets – session tickets DISABLED path
+#
+# Compiled with -DCONFIG_DSP_TLS_SESSION_TICKETS=0, overriding the
+# default-1 fallback in dsp_config.h.  Exercises the #else branches in
+# dsp_tls.c (no ticket_ctx member, no ticket_free call in deinit).
+# ---------------------------------------------------------------------------
+add_executable(dsp_test_no_tickets
+    test_tickets_off_main.c
+    test_tickets_off.c
+    "${ROOT_DIR}/components/dsp_mbedtls/dsp_tls.c"
+)
+
+target_compile_definitions(dsp_test_no_tickets PRIVATE
+    CONFIG_DSP_TLS_SESSION_TICKETS=0
+)
+
+target_link_libraries(dsp_test_no_tickets PRIVATE
+    dsp_embedded_host
+    unity
+)
+
+target_include_directories(dsp_test_no_tickets PRIVATE
+    ${COMPONENT_INCLUDE_DIRS}
+    ${STUBS_DIR}
+    ${UNITY_DIR}/src
+)
+
+# ---------------------------------------------------------------------------
 # CTest
 # ---------------------------------------------------------------------------
 enable_testing()
-add_test(NAME dsp_test_runner COMMAND dsp_test_runner)
+add_test(NAME dsp_test_runner    COMMAND dsp_test_runner)
+add_test(NAME dsp_test_no_tickets COMMAND dsp_test_no_tickets)
 
 # ---------------------------------------------------------------------------
 # Build summary

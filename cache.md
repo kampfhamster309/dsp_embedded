@@ -2,8 +2,8 @@
 
 ## Current State
 
-**Last completed ticket:** DSP-102 – Implement HTTP/1.1 server skeleton (dsp_http)
-**Next ticket:** DSP-103 – Add TLS session ticket support
+**Last completed ticket:** DSP-103 – TLS session ticket unit tests (enabled & disabled paths)
+**Next ticket:** DSP-104 – RAM usage instrumentation (dsp_mem_report)
 
 ## Project Structure
 
@@ -21,6 +21,9 @@ dsp_embedded/
 │   ├── test_smoke.c          # 15 smoke tests (pipeline + dsp_config defaults)
 │   ├── test_dsp_tls.c        # 9 host-native tests for dsp_tls context (DSP-101)
 │   ├── test_dsp_http.c       # 15 host-native tests for dsp_http (DSP-102)
+│   ├── test_dsp_tls_tickets.c # 6 tests: session tickets ENABLED path (DSP-103)
+│   ├── test_tickets_off.c    # 7 tests: session tickets DISABLED path (DSP-103)
+│   └── test_tickets_off_main.c # Unity runner for dsp_test_no_tickets binary
 │   ├── unity/                # git submodule: ThrowTheSwitch/Unity v2.6.0
 │   └── stubs/                # ESP-IDF header shims for host builds
 │       ├── esp_log.h         # ESP_LOG* → fprintf
@@ -58,6 +61,7 @@ dsp_embedded/
 - **Host build is in `test/`**, run with: `cd test && cmake -B build && cmake --build build && ctest --test-dir build`
 - `DSP_HOST_BUILD=1` is defined for host builds; `ESP_PLATFORM` is intentionally absent so `dsp_config.h` skips `sdkconfig.h`
 - `test/CMakeLists.txt` auto-discovers `components/*/include` — new component headers need no edits to the host build file; but component `.c` sources must be listed explicitly in `add_executable(dsp_test_runner ...)`
+- **DSP-103 two-binary strategy**: compile-time flags can't be tested in one binary. `dsp_test_runner` has `CONFIG_DSP_TLS_SESSION_TICKETS=1` (default). `dsp_test_no_tickets` compiles with `-DCONFIG_DSP_TLS_SESSION_TICKETS=0` and verifies the disabled path. Both registered in CTest. Run with: `ctest --test-dir test/build`
 - **dsp_http**: wraps `esp_http_server`; exposes `dsp_http_start(port)`, `dsp_http_stop()`, `dsp_http_register_handler(uri, method, fn)`, `dsp_http_is_running()`. Handler bridge uses `httpd_req_t::user_ctx` so a single `bridge_handler()` serves all routes. Server config: stack=4096, max_open_sockets=4, lru_purge_enable=true. Host `#else` stub preserves route table in static array (no real server) for test verification.
 - **dsp_http method mapping**: `DSP_HTTP_{GET,POST,PUT,DELETE}` are DSP-internal enum values (0–3); mapped to ESP-IDF `HTTP_GET=1, HTTP_POST=3, HTTP_PUT=4, HTTP_DELETE=0` via `map_method()` in the ESP_PLATFORM block.
 - **dsp_tls host stubs**: `dsp_tls.c` has an `#else` branch (no ESP_PLATFORM) providing `dsp_tls_server_init` (returns ESP_FAIL) and `dsp_tls_server_deinit`. `dsp_tls.h` requires `<stdbool.h>` and `<stddef.h>` (host-compatibility fixes applied in DSP-101).

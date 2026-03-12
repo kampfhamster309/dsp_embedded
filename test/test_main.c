@@ -47,6 +47,16 @@ extern void test_http_esp_platform_absent_in_host_build(void);
 extern void test_http_host_build_flag_set(void);
 
 /* -------------------------------------------------------------------------
+ * test_dsp_tls_tickets.c  (session tickets ENABLED path)
+ * ------------------------------------------------------------------------- */
+extern void test_tickets_flag_is_enabled(void);
+extern void test_tickets_enabled_init_still_fails_on_host(void);
+extern void test_tickets_deinit_initialized_false_is_safe(void);
+extern void test_tickets_deinit_initialized_true_clears_flag(void);
+extern void test_tickets_deinit_null_is_safe(void);
+extern void test_tickets_double_deinit_safe(void);
+
+/* -------------------------------------------------------------------------
  * test_dsp_tls.c
  * ------------------------------------------------------------------------- */
 extern void test_tls_ctx_sizeof_is_nonzero(void);
@@ -101,6 +111,14 @@ int main(void)
     RUN_TEST(test_http_is_running_false_after_stop);
     RUN_TEST(test_http_esp_platform_absent_in_host_build);
     RUN_TEST(test_http_host_build_flag_set);
+
+    /* dsp_tls session tickets – enabled path */
+    RUN_TEST(test_tickets_flag_is_enabled);
+    RUN_TEST(test_tickets_enabled_init_still_fails_on_host);
+    RUN_TEST(test_tickets_deinit_initialized_false_is_safe);
+    RUN_TEST(test_tickets_deinit_initialized_true_clears_flag);
+    RUN_TEST(test_tickets_deinit_null_is_safe);
+    RUN_TEST(test_tickets_double_deinit_safe);
 
     /* dsp_tls */
     RUN_TEST(test_tls_ctx_sizeof_is_nonzero);
