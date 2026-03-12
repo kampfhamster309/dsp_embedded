@@ -150,6 +150,45 @@ extern void test_tls_esp_platform_absent_in_host_build(void);
 extern void test_tls_host_build_flag_set(void);
 
 /* -------------------------------------------------------------------------
+ * test_dsp_jwt.c
+ * ------------------------------------------------------------------------- */
+extern void test_jwt_split_null_jwt_returns_invalid_arg(void);
+extern void test_jwt_split_null_out_returns_invalid_arg(void);
+extern void test_jwt_split_no_dots_returns_invalid_format(void);
+extern void test_jwt_split_one_dot_returns_invalid_format(void);
+extern void test_jwt_split_valid_returns_ok(void);
+extern void test_jwt_split_header_ptr_is_start_of_jwt(void);
+extern void test_jwt_split_dot_follows_header(void);
+extern void test_jwt_split_payload_follows_first_dot(void);
+extern void test_jwt_split_sig_follows_second_dot(void);
+extern void test_jwt_b64url_decode_null_src_returns_negative(void);
+extern void test_jwt_b64url_decode_null_dst_returns_negative(void);
+extern void test_jwt_b64url_decode_empty_returns_zero(void);
+extern void test_jwt_b64url_decode_hello_world(void);
+extern void test_jwt_b64url_decode_es256_header_length(void);
+extern void test_jwt_b64url_decode_es256_header_first_byte(void);
+extern void test_jwt_b64url_decode_insufficient_cap_returns_negative(void);
+extern void test_jwt_parse_alg_null_returns_unknown(void);
+extern void test_jwt_parse_alg_es256_returns_es256(void);
+extern void test_jwt_parse_alg_rs256_returns_rs256(void);
+extern void test_jwt_parse_alg_unknown_returns_unknown(void);
+extern void test_jwt_parse_exp_null_json_returns_invalid_arg(void);
+extern void test_jwt_parse_exp_null_out_returns_invalid_arg(void);
+extern void test_jwt_parse_exp_valid_returns_ok(void);
+extern void test_jwt_parse_exp_valid_value_is_far_future(void);
+extern void test_jwt_parse_exp_expired_value_is_small(void);
+extern void test_jwt_parse_exp_no_exp_returns_no_exp(void);
+extern void test_jwt_validate_null_jwt_returns_invalid_arg(void);
+extern void test_jwt_validate_null_pubkey_returns_invalid_arg(void);
+extern void test_jwt_validate_zero_len_pubkey_returns_invalid_arg(void);
+extern void test_jwt_validate_malformed_returns_invalid_format(void);
+extern void test_jwt_validate_wrong_alg_returns_invalid_alg(void);
+extern void test_jwt_validate_expired_returns_expired(void);
+extern void test_jwt_validate_no_exp_returns_no_exp(void);
+extern void test_jwt_validate_valid_format_host_returns_crypto(void);
+extern void test_jwt_esp_platform_absent_in_host_build(void);
+
+/* -------------------------------------------------------------------------
  * main
  * ------------------------------------------------------------------------- */
 int main(void)
@@ -284,6 +323,43 @@ int main(void)
     RUN_TEST(test_tls_deinit_clears_initialized);
     RUN_TEST(test_tls_esp_platform_absent_in_host_build);
     RUN_TEST(test_tls_host_build_flag_set);
+
+    /* dsp_jwt */
+    RUN_TEST(test_jwt_split_null_jwt_returns_invalid_arg);
+    RUN_TEST(test_jwt_split_null_out_returns_invalid_arg);
+    RUN_TEST(test_jwt_split_no_dots_returns_invalid_format);
+    RUN_TEST(test_jwt_split_one_dot_returns_invalid_format);
+    RUN_TEST(test_jwt_split_valid_returns_ok);
+    RUN_TEST(test_jwt_split_header_ptr_is_start_of_jwt);
+    RUN_TEST(test_jwt_split_dot_follows_header);
+    RUN_TEST(test_jwt_split_payload_follows_first_dot);
+    RUN_TEST(test_jwt_split_sig_follows_second_dot);
+    RUN_TEST(test_jwt_b64url_decode_null_src_returns_negative);
+    RUN_TEST(test_jwt_b64url_decode_null_dst_returns_negative);
+    RUN_TEST(test_jwt_b64url_decode_empty_returns_zero);
+    RUN_TEST(test_jwt_b64url_decode_hello_world);
+    RUN_TEST(test_jwt_b64url_decode_es256_header_length);
+    RUN_TEST(test_jwt_b64url_decode_es256_header_first_byte);
+    RUN_TEST(test_jwt_b64url_decode_insufficient_cap_returns_negative);
+    RUN_TEST(test_jwt_parse_alg_null_returns_unknown);
+    RUN_TEST(test_jwt_parse_alg_es256_returns_es256);
+    RUN_TEST(test_jwt_parse_alg_rs256_returns_rs256);
+    RUN_TEST(test_jwt_parse_alg_unknown_returns_unknown);
+    RUN_TEST(test_jwt_parse_exp_null_json_returns_invalid_arg);
+    RUN_TEST(test_jwt_parse_exp_null_out_returns_invalid_arg);
+    RUN_TEST(test_jwt_parse_exp_valid_returns_ok);
+    RUN_TEST(test_jwt_parse_exp_valid_value_is_far_future);
+    RUN_TEST(test_jwt_parse_exp_expired_value_is_small);
+    RUN_TEST(test_jwt_parse_exp_no_exp_returns_no_exp);
+    RUN_TEST(test_jwt_validate_null_jwt_returns_invalid_arg);
+    RUN_TEST(test_jwt_validate_null_pubkey_returns_invalid_arg);
+    RUN_TEST(test_jwt_validate_zero_len_pubkey_returns_invalid_arg);
+    RUN_TEST(test_jwt_validate_malformed_returns_invalid_format);
+    RUN_TEST(test_jwt_validate_wrong_alg_returns_invalid_alg);
+    RUN_TEST(test_jwt_validate_expired_returns_expired);
+    RUN_TEST(test_jwt_validate_no_exp_returns_no_exp);
+    RUN_TEST(test_jwt_validate_valid_format_host_returns_crypto);
+    RUN_TEST(test_jwt_esp_platform_absent_in_host_build);
 
     return UNITY_END();
 }
