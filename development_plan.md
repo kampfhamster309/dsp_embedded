@@ -14,12 +14,12 @@ Agent rules (AGENTS.md) apply throughout: git commit after every ticket, create 
 
 | Ticket | Title | Description |
 |--------|-------|-------------|
-| DSP-001 | Initialize ESP-IDF project | Create ESP-IDF project with CMakeLists.txt, sdkconfig defaults, and partition table for 4 MB flash. Initialize git repository. |
-| DSP-002 | Define compile-time feature flags | Add `dsp_config.h` with all `CONFIG_DSP_*` flags and their defaults. Document each flag. |
-| DSP-003 | Set up host-native build target | Configure a secondary CMake target that compiles the library for the host (x86/x64) to enable running unit tests without hardware. |
-| DSP-004 | Integrate Unity test framework | Add Unity as a submodule or vendored copy. Create `test/` directory structure. Add a smoke-test that always passes to verify the test pipeline. |
-| DSP-005 | Set up Docker-based EDC counterpart | Create `docker-compose.yml` that spins up a minimal EDC connector for integration testing. Document required EDC version in `human_to_do.md`. |
-| DSP-006 | Create initial README and doc structure | Write `README.md` with build instructions, and create `doc/` directory with `deviation_log.md` and `compatibility_matrix.md` stubs. |
+| ✅ DSP-001 | Initialize ESP-IDF project | Create ESP-IDF project with CMakeLists.txt, sdkconfig defaults, and partition table for 4 MB flash. Initialize git repository. |
+| ✅ DSP-002 | Define compile-time feature flags | Add `dsp_config.h` with all `CONFIG_DSP_*` flags and their defaults. Document each flag. |
+| ✅ DSP-003 | Set up host-native build target | Configure a secondary CMake target that compiles the library for the host (x86/x64) to enable running unit tests without hardware. |
+| ✅ DSP-004 | Integrate Unity test framework | Add Unity as a submodule or vendored copy. Create `test/` directory structure. Add a smoke-test that always passes to verify the test pipeline. |
+| ✅ DSP-005 | Set up Docker-based EDC counterpart | Create `docker-compose.yml` that spins up a minimal EDC connector for integration testing. Document required EDC version in `human_to_do.md`. |
+| ✅ DSP-006 | Create initial README and doc structure | Write `README.md` with build instructions, and create `doc/` directory with `deviation_log.md` and `compatibility_matrix.md` stubs. |
 
 **Acceptance Criteria:**
 
@@ -38,11 +38,11 @@ Agent rules (AGENTS.md) apply throughout: git commit after every ticket, create 
 
 | Ticket | Title | Description |
 |--------|-------|-------------|
-| DSP-101 | Integrate mbedTLS with reduced config | Configure mbedTLS with a minimal `mbedtls_config.h` targeting ≤50 KB RAM. Disable unused cipher suites, retain AES-GCM, SHA-256, RSA, ECC. |
-| DSP-102 | Implement HTTP/1.1 server skeleton | Wrap ESP-IDF's `esp_http_server` (or a lightweight alternative) in a `dsp_http` module. Expose `dsp_http_register_handler()` and `dsp_http_start()/stop()`. Target ≤20 KB RAM. |
-| DSP-103 | Add TLS session ticket support | Implement TLS session resumption via session tickets behind `CONFIG_DSP_TLS_SESSION_TICKETS`. Unit-test the enable/disable paths. |
-| DSP-104 | RAM usage instrumentation | Add a `dsp_mem_report()` utility that logs heap usage per component at startup. Used to verify budget compliance throughout development. |
-| DSP-105 | WiFi connection manager | Implement `dsp_wifi` module: connect, reconnect on drop, report IP ready event. Credentials stored in NVS. Write unit tests for state machine logic on host. |
+| ✅ DSP-101 | Integrate mbedTLS with reduced config | Configure mbedTLS with a minimal `mbedtls_config.h` targeting ≤50 KB RAM. Disable unused cipher suites, retain AES-GCM, SHA-256, RSA, ECC. |
+| ✅ DSP-102 | Implement HTTP/1.1 server skeleton | Wrap ESP-IDF's `esp_http_server` (or a lightweight alternative) in a `dsp_http` module. Expose `dsp_http_register_handler()` and `dsp_http_start()/stop()`. Target ≤20 KB RAM. |
+| ✅ DSP-103 | Add TLS session ticket support | Implement TLS session resumption via session tickets behind `CONFIG_DSP_TLS_SESSION_TICKETS`. Unit-test the enable/disable paths. |
+| ✅ DSP-104 | RAM usage instrumentation | Add a `dsp_mem_report()` utility that logs heap usage per component at startup. Used to verify budget compliance throughout development. |
+| ✅ DSP-105 | WiFi connection manager | Implement `dsp_wifi` module: connect, reconnect on drop, report IP ready event. Credentials stored in NVS. Write unit tests for state machine logic on host. |
 
 **Acceptance Criteria:**
 
@@ -61,11 +61,11 @@ Agent rules (AGENTS.md) apply throughout: git commit after every ticket, create 
 
 | Ticket | Title | Description |
 |--------|-------|-------------|
-| DSP-201 | X.509 certificate provisioning | Implement `dsp_identity` module. Load DER-encoded device certificate and private key from flash (embedded via `COMPONENT_EMBED_FILES`). Expose `dsp_identity_get_cert()`. |
-| DSP-202 | JWT validation – ES256 | Implement `dsp_jwt_validate()` for ES256 tokens using mbedTLS ECC hardware acceleration. Parse header, payload, and signature. Unit-test with known-good and known-bad tokens. |
-| DSP-203 | JWT validation – RS256 | Extend `dsp_jwt_validate()` for RS256. Unit-test independently. |
-| DSP-204 | Pre-Shared Key (PSK) mode | Implement PSK authentication path behind `CONFIG_DSP_ENABLE_PSK` (compile-time flag, default 0). When enabled, PSK identity and key are stored in a module-internal buffer and applied to a TLS context via `dsp_psk_apply()`. Unit-test PSK setup (init/deinit/set/get) and the disabled-path compilation guard. |
-| DSP-205 | DAPS compatibility shim stub | Create `dsp_daps_shim` module behind `CONFIG_DSP_ENABLE_DAPS_SHIM`. Stub that proxies token requests to a configured gateway URL. Mark as not-yet-implemented with clear error return. Document in `deviation_log.md`. |
+| ✅ DSP-201 | X.509 certificate provisioning | Implement `dsp_identity` module. Load DER-encoded device certificate and private key from flash (embedded via `COMPONENT_EMBED_FILES`). Expose `dsp_identity_get_cert()`. |
+| ✅ DSP-202 | JWT validation – ES256 | Implement `dsp_jwt_validate()` for ES256 tokens using mbedTLS ECC hardware acceleration. Parse header, payload, and signature. Unit-test with known-good and known-bad tokens. |
+| ✅ DSP-203 | JWT validation – RS256 | Extend `dsp_jwt_validate()` for RS256. Unit-test independently. |
+| ✅ DSP-204 | Pre-Shared Key (PSK) mode | Implement PSK authentication path behind `CONFIG_DSP_ENABLE_PSK` (compile-time flag, default 0). When enabled, PSK identity and key are stored in a module-internal buffer and applied to a TLS context via `dsp_psk_apply()`. Unit-test PSK setup (init/deinit/set/get) and the disabled-path compilation guard. |
+| ✅ DSP-205 | DAPS compatibility shim stub | Create `dsp_daps_shim` module behind `CONFIG_DSP_ENABLE_DAPS_SHIM`. Stub that proxies token requests to a configured gateway URL. Mark as not-yet-implemented with clear error return. Document in `deviation_log.md`. |
 
 **Acceptance Criteria:**
 
@@ -83,10 +83,10 @@ Agent rules (AGENTS.md) apply throughout: git commit after every ticket, create 
 
 | Ticket | Title | Description |
 |--------|-------|-------------|
-| DSP-301 | Integrate cJSON | Add cJSON as a vendored dependency. Wrap it in `dsp_json` with helpers for mandatory DSP fields. Verify it fits within 15 KB RAM target. |
-| DSP-302 | Static JSON-LD context table | Define a C header `dsp_jsonld_ctx.h` containing all required DSP namespace prefixes and type mappings as compile-time string constants. Document the static-vs-dynamic trade-off in `deviation_log.md`. |
-| DSP-303 | DSP message schema validators | Implement `dsp_msg_validate_catalog_request()`, `dsp_msg_validate_offer()`, `dsp_msg_validate_agreement()`, and `dsp_msg_validate_transfer_request()`. Unit-test each with valid and invalid JSON fixtures. |
-| DSP-304 | DSP message builders | Implement builder functions for all outgoing message types (catalog response, agreement, transfer start, status responses). Unit-test serialization output against expected JSON fixtures. |
+| ✅ DSP-301 | Integrate cJSON | Add cJSON as a vendored dependency. Wrap it in `dsp_json` with helpers for mandatory DSP fields. Verify it fits within 15 KB RAM target. |
+| ✅ DSP-302 | Static JSON-LD context table | Define a C header `dsp_jsonld_ctx.h` containing all required DSP namespace prefixes and type mappings as compile-time string constants. Document the static-vs-dynamic trade-off in `deviation_log.md`. |
+| ✅ DSP-303 | DSP message schema validators | Implement `dsp_msg_validate_catalog_request()`, `dsp_msg_validate_offer()`, `dsp_msg_validate_agreement()`, and `dsp_msg_validate_transfer_request()`. Unit-test each with valid and invalid JSON fixtures. |
+| ✅ DSP-304 | DSP message builders | Implement builder functions for all outgoing message types (catalog response, agreement, transfer start, status responses). Unit-test serialization output against expected JSON fixtures. |
 
 **Acceptance Criteria:**
 
@@ -103,13 +103,13 @@ Agent rules (AGENTS.md) apply throughout: git commit after every ticket, create 
 
 | Ticket | Title | Description |
 |--------|-------|-------------|
-| DSP-401 | Catalog state machine | Implement `dsp_catalog` module: load static catalog from flash, serve `GET /catalog`. Unit-test catalog serialization. |
-| DSP-402 | Negotiation state machine – offer receipt | Implement state transitions for receiving `POST /negotiations/offers`. States: IDLE → OFFERED. Persist state in RTC memory. Unit-test transitions. |
-| DSP-403 | Negotiation state machine – agreement | Implement `POST /negotiations/{id}/agree` and `GET /negotiations/{id}`. States: OFFERED → AGREED. Unit-test. |
-| DSP-404 | Negotiation state machine – termination | Implement `POST /negotiations/terminate` behind `CONFIG_DSP_ENABLE_NEGOTIATE_TERMINATE` (MAY). States: any → TERMINATED. Unit-test. |
-| DSP-405 | Transfer state machine – start | Implement `POST /transfers/start`. States: AGREED → TRANSFERRING. Trigger data delivery to Core 1 via FreeRTOS queue. Unit-test. |
-| DSP-406 | Transfer state machine – status and completion | Implement `GET /transfers/{id}`. States: TRANSFERRING → COMPLETED / FAILED. Unit-test all terminal transitions. |
-| DSP-407 | Dynamic catalog request endpoint | Implement `POST /catalog/request` behind `CONFIG_DSP_ENABLE_CATALOG_REQUEST` (SHOULD). Unit-test enable/disable paths. |
+| ✅ DSP-401 | Catalog state machine | Implement `dsp_catalog` module: load static catalog from flash, serve `GET /catalog`. Unit-test catalog serialization. |
+| ✅ DSP-402 | Negotiation state machine – offer receipt | Implement state transitions for receiving `POST /negotiations/offers`. States: IDLE → OFFERED. Persist state in RTC memory. Unit-test transitions. |
+| ✅ DSP-403 | Negotiation state machine – agreement | Implement `POST /negotiations/{id}/agree` and `GET /negotiations/{id}`. States: OFFERED → AGREED. Unit-test. |
+| ✅ DSP-404 | Negotiation state machine – termination | Implement `POST /negotiations/terminate` behind `CONFIG_DSP_ENABLE_NEGOTIATE_TERMINATE` (MAY). States: any → TERMINATED. Unit-test. |
+| ✅ DSP-405 | Transfer state machine – start | Implement `POST /transfers/start`. States: AGREED → TRANSFERRING. Trigger data delivery to Core 1 via FreeRTOS queue. Unit-test. |
+| ✅ DSP-406 | Transfer state machine – status and completion | Implement `GET /transfers/{id}`. States: TRANSFERRING → COMPLETED / FAILED. Unit-test all terminal transitions. |
+| ✅ DSP-407 | Dynamic catalog request endpoint | Implement `POST /catalog/request` behind `CONFIG_DSP_ENABLE_CATALOG_REQUEST` (SHOULD). Unit-test enable/disable paths. |
 
 **Acceptance Criteria:**
 
