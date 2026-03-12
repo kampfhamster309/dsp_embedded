@@ -229,6 +229,31 @@ extern void test_psk_get_null_after_deinit(void);
 extern void test_psk_esp_platform_absent_in_host_build(void);
 
 /* -------------------------------------------------------------------------
+ * test_dsp_jsonld.c
+ * ------------------------------------------------------------------------- */
+extern void test_jsonld_context_url_is_defined(void);
+extern void test_jsonld_context_url_contains_dspace_domain(void);
+extern void test_jsonld_prefix_dspace_ends_with_colon(void);
+extern void test_jsonld_prefix_dcat_ends_with_colon(void);
+extern void test_jsonld_prefix_odrl_ends_with_colon(void);
+extern void test_jsonld_field_context_value(void);
+extern void test_jsonld_field_type_value(void);
+extern void test_jsonld_field_id_value(void);
+extern void test_jsonld_common_fields_have_dspace_prefix(void);
+extern void test_jsonld_type_catalog_request_has_dspace_prefix(void);
+extern void test_jsonld_type_catalog_has_dcat_prefix(void);
+extern void test_jsonld_negotiation_types_have_dspace_prefix(void);
+extern void test_jsonld_negotiation_types_are_distinct(void);
+extern void test_jsonld_transfer_types_have_dspace_prefix(void);
+extern void test_jsonld_transfer_types_are_distinct(void);
+extern void test_jsonld_type_error_has_dspace_prefix(void);
+extern void test_jsonld_neg_states_have_dspace_prefix(void);
+extern void test_jsonld_neg_states_are_distinct(void);
+extern void test_jsonld_xfer_states_have_dspace_prefix(void);
+extern void test_jsonld_xfer_states_are_distinct(void);
+extern void test_jsonld_constants_work_with_dsp_json(void);
+
+/* -------------------------------------------------------------------------
  * test_dsp_json.c
  * ------------------------------------------------------------------------- */
 extern void test_json_cjson_version_is_1_7(void);
@@ -489,6 +514,29 @@ int main(void)
     RUN_TEST(test_psk_get_key_content_correct);
     RUN_TEST(test_psk_get_null_after_deinit);
     RUN_TEST(test_psk_esp_platform_absent_in_host_build);
+
+    /* dsp_jsonld_ctx (DSP-302) */
+    RUN_TEST(test_jsonld_context_url_is_defined);
+    RUN_TEST(test_jsonld_context_url_contains_dspace_domain);
+    RUN_TEST(test_jsonld_prefix_dspace_ends_with_colon);
+    RUN_TEST(test_jsonld_prefix_dcat_ends_with_colon);
+    RUN_TEST(test_jsonld_prefix_odrl_ends_with_colon);
+    RUN_TEST(test_jsonld_field_context_value);
+    RUN_TEST(test_jsonld_field_type_value);
+    RUN_TEST(test_jsonld_field_id_value);
+    RUN_TEST(test_jsonld_common_fields_have_dspace_prefix);
+    RUN_TEST(test_jsonld_type_catalog_request_has_dspace_prefix);
+    RUN_TEST(test_jsonld_type_catalog_has_dcat_prefix);
+    RUN_TEST(test_jsonld_negotiation_types_have_dspace_prefix);
+    RUN_TEST(test_jsonld_negotiation_types_are_distinct);
+    RUN_TEST(test_jsonld_transfer_types_have_dspace_prefix);
+    RUN_TEST(test_jsonld_transfer_types_are_distinct);
+    RUN_TEST(test_jsonld_type_error_has_dspace_prefix);
+    RUN_TEST(test_jsonld_neg_states_have_dspace_prefix);
+    RUN_TEST(test_jsonld_neg_states_are_distinct);
+    RUN_TEST(test_jsonld_xfer_states_have_dspace_prefix);
+    RUN_TEST(test_jsonld_xfer_states_are_distinct);
+    RUN_TEST(test_jsonld_constants_work_with_dsp_json);
 
     /* dsp_json (DSP-301) */
     RUN_TEST(test_json_cjson_version_is_1_7);
