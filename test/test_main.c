@@ -229,6 +229,27 @@ extern void test_psk_get_null_after_deinit(void);
 extern void test_psk_esp_platform_absent_in_host_build(void);
 
 /* -------------------------------------------------------------------------
+ * test_dsp_daps.c
+ * ------------------------------------------------------------------------- */
+extern void test_daps_init_returns_ok(void);
+extern void test_daps_is_initialized_false_before_init(void);
+extern void test_daps_is_initialized_true_after_init(void);
+extern void test_daps_is_initialized_false_after_deinit(void);
+extern void test_daps_double_init_safe(void);
+extern void test_daps_double_deinit_safe(void);
+extern void test_daps_request_null_buf_returns_invalid_arg(void);
+extern void test_daps_request_zero_cap_returns_invalid_arg(void);
+extern void test_daps_request_null_out_len_returns_invalid_arg(void);
+extern void test_daps_request_before_init_returns_not_init(void);
+extern void test_daps_shim_disabled_by_default(void);
+extern void test_daps_gateway_url_empty_by_default(void);
+extern void test_daps_request_shim_disabled_returns_disabled(void);
+extern void test_daps_max_token_len_nonzero(void);
+extern void test_daps_max_token_len_fits_typical_dat(void);
+extern void test_daps_error_codes_are_distinct(void);
+extern void test_daps_esp_platform_absent_in_host_build(void);
+
+/* -------------------------------------------------------------------------
  * main
  * ------------------------------------------------------------------------- */
 int main(void)
@@ -440,6 +461,25 @@ int main(void)
     RUN_TEST(test_psk_get_key_content_correct);
     RUN_TEST(test_psk_get_null_after_deinit);
     RUN_TEST(test_psk_esp_platform_absent_in_host_build);
+
+    /* dsp_daps (DSP-205) */
+    RUN_TEST(test_daps_init_returns_ok);
+    RUN_TEST(test_daps_is_initialized_false_before_init);
+    RUN_TEST(test_daps_is_initialized_true_after_init);
+    RUN_TEST(test_daps_is_initialized_false_after_deinit);
+    RUN_TEST(test_daps_double_init_safe);
+    RUN_TEST(test_daps_double_deinit_safe);
+    RUN_TEST(test_daps_request_null_buf_returns_invalid_arg);
+    RUN_TEST(test_daps_request_zero_cap_returns_invalid_arg);
+    RUN_TEST(test_daps_request_null_out_len_returns_invalid_arg);
+    RUN_TEST(test_daps_request_before_init_returns_not_init);
+    RUN_TEST(test_daps_shim_disabled_by_default);
+    RUN_TEST(test_daps_gateway_url_empty_by_default);
+    RUN_TEST(test_daps_request_shim_disabled_returns_disabled);
+    RUN_TEST(test_daps_max_token_len_nonzero);
+    RUN_TEST(test_daps_max_token_len_fits_typical_dat);
+    RUN_TEST(test_daps_error_codes_are_distinct);
+    RUN_TEST(test_daps_esp_platform_absent_in_host_build);
 
     return UNITY_END();
 }

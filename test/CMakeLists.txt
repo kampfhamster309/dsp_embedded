@@ -96,6 +96,8 @@ add_executable(dsp_test_runner
     "${ROOT_DIR}/components/dsp_jwt/dsp_jwt.c"
     test_dsp_psk.c
     "${ROOT_DIR}/components/dsp_psk/dsp_psk.c"
+    test_dsp_daps.c
+    "${ROOT_DIR}/components/dsp_daps/dsp_daps.c"
 )
 
 target_link_libraries(dsp_test_runner PRIVATE
