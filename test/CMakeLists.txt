@@ -155,6 +155,39 @@ target_include_directories(dsp_test_no_tickets PRIVATE
 )
 
 # ---------------------------------------------------------------------------
+# dsp_test_catalog_request_on – catalog-request ENABLED path
+#
+# Compiled with -DCONFIG_DSP_ENABLE_CATALOG_REQUEST=1, overriding the
+# default-0 fallback in dsp_config.h.  Exercises the #if block that registers
+# POST /catalog/request and its host stub in dsp_catalog.c.
+# ---------------------------------------------------------------------------
+add_executable(dsp_test_catalog_request_on
+    test_catalog_request_on_main.c
+    test_catalog_request_on.c
+    "${ROOT_DIR}/components/dsp_catalog/dsp_catalog.c"
+    "${ROOT_DIR}/components/dsp_http/dsp_http.c"
+    "${ROOT_DIR}/components/dsp_build/dsp_build.c"
+    "${ROOT_DIR}/components/dsp_json/dsp_json.c"
+    "${ROOT_DIR}/components/dsp_json/cjson/cJSON.c"
+)
+
+target_compile_definitions(dsp_test_catalog_request_on PRIVATE
+    CONFIG_DSP_ENABLE_CATALOG_REQUEST=1
+)
+
+target_link_libraries(dsp_test_catalog_request_on PRIVATE
+    dsp_embedded_host
+    unity
+)
+
+target_include_directories(dsp_test_catalog_request_on PRIVATE
+    ${COMPONENT_INCLUDE_DIRS}
+    "${COMPONENTS_DIR}/dsp_json/cjson"
+    ${STUBS_DIR}
+    ${UNITY_DIR}/src
+)
+
+# ---------------------------------------------------------------------------
 # dsp_test_terminate_on – negotiate-terminate ENABLED path
 #
 # Compiled with -DCONFIG_DSP_ENABLE_NEGOTIATE_TERMINATE=1, overriding the
@@ -187,9 +220,10 @@ target_include_directories(dsp_test_terminate_on PRIVATE
 # CTest
 # ---------------------------------------------------------------------------
 enable_testing()
-add_test(NAME dsp_test_runner      COMMAND dsp_test_runner)
-add_test(NAME dsp_test_no_tickets  COMMAND dsp_test_no_tickets)
-add_test(NAME dsp_test_terminate_on COMMAND dsp_test_terminate_on)
+add_test(NAME dsp_test_runner             COMMAND dsp_test_runner)
+add_test(NAME dsp_test_no_tickets         COMMAND dsp_test_no_tickets)
+add_test(NAME dsp_test_terminate_on       COMMAND dsp_test_terminate_on)
+add_test(NAME dsp_test_catalog_request_on COMMAND dsp_test_catalog_request_on)
 
 # ---------------------------------------------------------------------------
 # Build summary

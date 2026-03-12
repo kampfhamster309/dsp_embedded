@@ -1,12 +1,13 @@
 /**
  * @file test_dsp_catalog.c
- * @brief Host-native Unity tests for dsp_catalog (DSP-401).
+ * @brief Host-native Unity tests for dsp_catalog (DSP-401, DSP-407).
  *
- * 18 tests covering:
+ * 21 tests covering:
  *   - Compile-time config constants
  *   - Lifecycle (init/deinit/is_initialized)
  *   - dsp_catalog_get_json serialization
  *   - dsp_catalog_register_handler
+ *   - dsp_catalog_register_request_handler – disabled path (DSP-407)
  */
 
 #include "unity.h"
@@ -186,5 +187,30 @@ void test_catalog_register_handler_after_init_returns_ok(void)
     dsp_catalog_deinit();
     dsp_catalog_init();
     TEST_ASSERT_EQUAL(ESP_OK, dsp_catalog_register_handler());
+    dsp_catalog_deinit();
+}
+
+/* -------------------------------------------------------------------------
+ * 5. dsp_catalog_register_request_handler – disabled path (DSP-407)
+ * ------------------------------------------------------------------------- */
+
+void test_catalog_request_flag_is_disabled_by_default(void)
+{
+    TEST_ASSERT_EQUAL(0, CONFIG_DSP_ENABLE_CATALOG_REQUEST);
+}
+
+void test_catalog_request_register_before_init_returns_invalid_state(void)
+{
+    dsp_catalog_deinit();
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE,
+                      dsp_catalog_register_request_handler());
+}
+
+void test_catalog_request_register_disabled_returns_not_supported(void)
+{
+    dsp_catalog_deinit();
+    dsp_catalog_init();
+    TEST_ASSERT_EQUAL(ESP_ERR_NOT_SUPPORTED,
+                      dsp_catalog_register_request_handler());
     dsp_catalog_deinit();
 }

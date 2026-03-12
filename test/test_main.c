@@ -338,6 +338,9 @@ extern void test_catalog_get_json_title_matches_config(void);
 extern void test_catalog_get_json_dataset_is_array(void);
 extern void test_catalog_register_handler_before_init_returns_invalid_state(void);
 extern void test_catalog_register_handler_after_init_returns_ok(void);
+extern void test_catalog_request_flag_is_disabled_by_default(void);
+extern void test_catalog_request_register_before_init_returns_invalid_state(void);
+extern void test_catalog_request_register_disabled_returns_not_supported(void);
 
 /* -------------------------------------------------------------------------
  * test_dsp_build.c
@@ -811,6 +814,11 @@ int main(void)
     RUN_TEST(test_catalog_get_json_dataset_is_array);
     RUN_TEST(test_catalog_register_handler_before_init_returns_invalid_state);
     RUN_TEST(test_catalog_register_handler_after_init_returns_ok);
+
+    /* dsp_catalog POST /catalog/request – disabled path (DSP-407) */
+    RUN_TEST(test_catalog_request_flag_is_disabled_by_default);
+    RUN_TEST(test_catalog_request_register_before_init_returns_invalid_state);
+    RUN_TEST(test_catalog_request_register_disabled_returns_not_supported);
 
     /* dsp_build message builders (DSP-304) */
     RUN_TEST(test_build_error_codes_distinct);

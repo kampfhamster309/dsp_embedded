@@ -87,6 +87,19 @@ dsp_build_err_t dsp_catalog_get_json(char *out, size_t cap);
  */
 esp_err_t dsp_catalog_register_handler(void);
 
+/**
+ * Register the POST /catalog/request handler (optional, DSP priority: SHOULD).
+ *
+ * Gated on CONFIG_DSP_ENABLE_CATALOG_REQUEST.  When the flag is 1 the
+ * endpoint accepts a CatalogRequestMessage and responds with the same static
+ * catalog as GET /catalog (filter parameters are not supported — DEV-001).
+ *
+ * @return ESP_OK on success.
+ *         ESP_ERR_INVALID_STATE if dsp_catalog_init() has not been called.
+ *         ESP_ERR_NOT_SUPPORTED if CONFIG_DSP_ENABLE_CATALOG_REQUEST == 0.
+ */
+esp_err_t dsp_catalog_register_request_handler(void);
+
 #ifdef __cplusplus
 }
 #endif
