@@ -229,6 +229,34 @@ extern void test_psk_get_null_after_deinit(void);
 extern void test_psk_esp_platform_absent_in_host_build(void);
 
 /* -------------------------------------------------------------------------
+ * test_dsp_json.c
+ * ------------------------------------------------------------------------- */
+extern void test_json_cjson_version_is_1_7(void);
+extern void test_json_parse_valid_returns_non_null(void);
+extern void test_json_parse_invalid_returns_null(void);
+extern void test_json_parse_null_returns_null(void);
+extern void test_json_delete_null_is_safe(void);
+extern void test_json_get_string_existing_key(void);
+extern void test_json_get_string_missing_key_returns_false(void);
+extern void test_json_get_string_null_obj_returns_false(void);
+extern void test_json_get_string_null_key_returns_false(void);
+extern void test_json_get_string_buf_too_small_returns_false(void);
+extern void test_json_get_string_exact_fit(void);
+extern void test_json_get_type_returns_correct_value(void);
+extern void test_json_get_context_returns_correct_value(void);
+extern void test_json_has_mandatory_fields_both_present(void);
+extern void test_json_has_mandatory_fields_missing_type(void);
+extern void test_json_has_mandatory_fields_missing_context(void);
+extern void test_json_has_mandatory_fields_null_returns_false(void);
+extern void test_json_new_object_returns_non_null(void);
+extern void test_json_add_string_roundtrip(void);
+extern void test_json_add_string_null_args_return_false(void);
+extern void test_json_print_to_buffer(void);
+extern void test_json_print_buffer_too_small_returns_false(void);
+extern void test_json_print_alloc_and_free(void);
+extern void test_json_print_null_returns_false(void);
+
+/* -------------------------------------------------------------------------
  * test_dsp_daps.c
  * ------------------------------------------------------------------------- */
 extern void test_daps_init_returns_ok(void);
@@ -461,6 +489,32 @@ int main(void)
     RUN_TEST(test_psk_get_key_content_correct);
     RUN_TEST(test_psk_get_null_after_deinit);
     RUN_TEST(test_psk_esp_platform_absent_in_host_build);
+
+    /* dsp_json (DSP-301) */
+    RUN_TEST(test_json_cjson_version_is_1_7);
+    RUN_TEST(test_json_parse_valid_returns_non_null);
+    RUN_TEST(test_json_parse_invalid_returns_null);
+    RUN_TEST(test_json_parse_null_returns_null);
+    RUN_TEST(test_json_delete_null_is_safe);
+    RUN_TEST(test_json_get_string_existing_key);
+    RUN_TEST(test_json_get_string_missing_key_returns_false);
+    RUN_TEST(test_json_get_string_null_obj_returns_false);
+    RUN_TEST(test_json_get_string_null_key_returns_false);
+    RUN_TEST(test_json_get_string_buf_too_small_returns_false);
+    RUN_TEST(test_json_get_string_exact_fit);
+    RUN_TEST(test_json_get_type_returns_correct_value);
+    RUN_TEST(test_json_get_context_returns_correct_value);
+    RUN_TEST(test_json_has_mandatory_fields_both_present);
+    RUN_TEST(test_json_has_mandatory_fields_missing_type);
+    RUN_TEST(test_json_has_mandatory_fields_missing_context);
+    RUN_TEST(test_json_has_mandatory_fields_null_returns_false);
+    RUN_TEST(test_json_new_object_returns_non_null);
+    RUN_TEST(test_json_add_string_roundtrip);
+    RUN_TEST(test_json_add_string_null_args_return_false);
+    RUN_TEST(test_json_print_to_buffer);
+    RUN_TEST(test_json_print_buffer_too_small_returns_false);
+    RUN_TEST(test_json_print_alloc_and_free);
+    RUN_TEST(test_json_print_null_returns_false);
 
     /* dsp_daps (DSP-205) */
     RUN_TEST(test_daps_init_returns_ok);

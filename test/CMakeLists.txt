@@ -98,6 +98,9 @@ add_executable(dsp_test_runner
     "${ROOT_DIR}/components/dsp_psk/dsp_psk.c"
     test_dsp_daps.c
     "${ROOT_DIR}/components/dsp_daps/dsp_daps.c"
+    test_dsp_json.c
+    "${ROOT_DIR}/components/dsp_json/dsp_json.c"
+    "${ROOT_DIR}/components/dsp_json/cjson/cJSON.c"
 )
 
 target_link_libraries(dsp_test_runner PRIVATE
@@ -107,6 +110,7 @@ target_link_libraries(dsp_test_runner PRIVATE
 
 target_include_directories(dsp_test_runner PRIVATE
     ${COMPONENT_INCLUDE_DIRS}
+    "${COMPONENTS_DIR}/dsp_json/cjson"
     ${STUBS_DIR}
     ${UNITY_DIR}/src
 )
