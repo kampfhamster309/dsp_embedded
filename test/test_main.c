@@ -47,6 +47,26 @@ extern void test_http_esp_platform_absent_in_host_build(void);
 extern void test_http_host_build_flag_set(void);
 
 /* -------------------------------------------------------------------------
+ * test_dsp_mem.c
+ * ------------------------------------------------------------------------- */
+extern void test_mem_budget_total_is_130kb(void);
+extern void test_mem_budget_tls_is_50kb(void);
+extern void test_mem_budget_http_is_20kb(void);
+extern void test_mem_budget_json_is_15kb(void);
+extern void test_mem_budget_jwt_is_25kb(void);
+extern void test_mem_budget_dspsm_is_20kb(void);
+extern void test_mem_budget_components_fit_in_total(void);
+extern void test_mem_host_sentinel_above_budget(void);
+extern void test_mem_host_sentinel_is_512kb(void);
+extern void test_mem_free_internal_returns_sentinel_on_host(void);
+extern void test_mem_free_internal_is_nonzero(void);
+extern void test_mem_free_psram_returns_zero_on_host(void);
+extern void test_mem_report_valid_tag_returns_ok(void);
+extern void test_mem_report_null_tag_returns_ok(void);
+extern void test_mem_report_empty_tag_returns_ok(void);
+extern void test_mem_esp_platform_absent_in_host_build(void);
+
+/* -------------------------------------------------------------------------
  * test_dsp_tls_tickets.c  (session tickets ENABLED path)
  * ------------------------------------------------------------------------- */
 extern void test_tickets_flag_is_enabled(void);
@@ -111,6 +131,24 @@ int main(void)
     RUN_TEST(test_http_is_running_false_after_stop);
     RUN_TEST(test_http_esp_platform_absent_in_host_build);
     RUN_TEST(test_http_host_build_flag_set);
+
+    /* dsp_mem */
+    RUN_TEST(test_mem_budget_total_is_130kb);
+    RUN_TEST(test_mem_budget_tls_is_50kb);
+    RUN_TEST(test_mem_budget_http_is_20kb);
+    RUN_TEST(test_mem_budget_json_is_15kb);
+    RUN_TEST(test_mem_budget_jwt_is_25kb);
+    RUN_TEST(test_mem_budget_dspsm_is_20kb);
+    RUN_TEST(test_mem_budget_components_fit_in_total);
+    RUN_TEST(test_mem_host_sentinel_above_budget);
+    RUN_TEST(test_mem_host_sentinel_is_512kb);
+    RUN_TEST(test_mem_free_internal_returns_sentinel_on_host);
+    RUN_TEST(test_mem_free_internal_is_nonzero);
+    RUN_TEST(test_mem_free_psram_returns_zero_on_host);
+    RUN_TEST(test_mem_report_valid_tag_returns_ok);
+    RUN_TEST(test_mem_report_null_tag_returns_ok);
+    RUN_TEST(test_mem_report_empty_tag_returns_ok);
+    RUN_TEST(test_mem_esp_platform_absent_in_host_build);
 
     /* dsp_tls session tickets – enabled path */
     RUN_TEST(test_tickets_flag_is_enabled);

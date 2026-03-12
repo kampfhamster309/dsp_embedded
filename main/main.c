@@ -1,12 +1,14 @@
 #include <stdio.h>
 #include "esp_log.h"
 #include "dsp_config.h"
+#include "dsp_mem.h"
 
 static const char *TAG = "dsp_embedded";
 
 void app_main(void)
 {
     ESP_LOGI(TAG, "DSP Embedded starting...");
+    dsp_mem_report("boot");
     ESP_LOGI(TAG, "Build config: catalog_request=%d consumer=%d daps_shim=%d "
                   "tls_tickets=%d psram=%d deep_sleep=%d terminate=%d "
                   "max_neg=%d max_tx=%d port=%d verbose=%d",
