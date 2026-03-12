@@ -229,6 +229,28 @@ extern void test_psk_get_null_after_deinit(void);
 extern void test_psk_esp_platform_absent_in_host_build(void);
 
 /* -------------------------------------------------------------------------
+ * test_dsp_catalog.c
+ * ------------------------------------------------------------------------- */
+extern void test_catalog_dataset_id_is_nonempty(void);
+extern void test_catalog_title_is_nonempty(void);
+extern void test_catalog_json_buf_size_sufficient(void);
+extern void test_catalog_is_initialized_false_before_init(void);
+extern void test_catalog_init_returns_ok(void);
+extern void test_catalog_is_initialized_true_after_init(void);
+extern void test_catalog_is_initialized_false_after_deinit(void);
+extern void test_catalog_double_init_safe(void);
+extern void test_catalog_double_deinit_safe(void);
+extern void test_catalog_get_json_null_buf_returns_null_arg(void);
+extern void test_catalog_get_json_buf_too_small_returns_error(void);
+extern void test_catalog_get_json_returns_ok(void);
+extern void test_catalog_get_json_context_field(void);
+extern void test_catalog_get_json_type_is_catalog(void);
+extern void test_catalog_get_json_title_matches_config(void);
+extern void test_catalog_get_json_dataset_is_array(void);
+extern void test_catalog_register_handler_before_init_returns_invalid_state(void);
+extern void test_catalog_register_handler_after_init_returns_ok(void);
+
+/* -------------------------------------------------------------------------
  * test_dsp_build.c
  * ------------------------------------------------------------------------- */
 extern void test_build_error_codes_distinct(void);
@@ -589,6 +611,26 @@ int main(void)
     RUN_TEST(test_psk_get_key_content_correct);
     RUN_TEST(test_psk_get_null_after_deinit);
     RUN_TEST(test_psk_esp_platform_absent_in_host_build);
+
+    /* dsp_catalog (DSP-401) */
+    RUN_TEST(test_catalog_dataset_id_is_nonempty);
+    RUN_TEST(test_catalog_title_is_nonempty);
+    RUN_TEST(test_catalog_json_buf_size_sufficient);
+    RUN_TEST(test_catalog_is_initialized_false_before_init);
+    RUN_TEST(test_catalog_init_returns_ok);
+    RUN_TEST(test_catalog_is_initialized_true_after_init);
+    RUN_TEST(test_catalog_is_initialized_false_after_deinit);
+    RUN_TEST(test_catalog_double_init_safe);
+    RUN_TEST(test_catalog_double_deinit_safe);
+    RUN_TEST(test_catalog_get_json_null_buf_returns_null_arg);
+    RUN_TEST(test_catalog_get_json_buf_too_small_returns_error);
+    RUN_TEST(test_catalog_get_json_returns_ok);
+    RUN_TEST(test_catalog_get_json_context_field);
+    RUN_TEST(test_catalog_get_json_type_is_catalog);
+    RUN_TEST(test_catalog_get_json_title_matches_config);
+    RUN_TEST(test_catalog_get_json_dataset_is_array);
+    RUN_TEST(test_catalog_register_handler_before_init_returns_invalid_state);
+    RUN_TEST(test_catalog_register_handler_after_init_returns_ok);
 
     /* dsp_build message builders (DSP-304) */
     RUN_TEST(test_build_error_codes_distinct);

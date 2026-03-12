@@ -196,6 +196,28 @@
 #endif
 
 /* -------------------------------------------------------------------------
+ * Static catalog content
+ * ------------------------------------------------------------------------- */
+
+/**
+ * CONFIG_DSP_CATALOG_DATASET_ID
+ *
+ * IRI identifying the single dataset entry in the GET /catalog response.
+ */
+#ifndef CONFIG_DSP_CATALOG_DATASET_ID
+#define CONFIG_DSP_CATALOG_DATASET_ID "urn:uuid:dsp-embedded-sensor-dataset-1"
+#endif
+
+/**
+ * CONFIG_DSP_CATALOG_TITLE
+ *
+ * dct:title of the static catalog.
+ */
+#ifndef CONFIG_DSP_CATALOG_TITLE
+#define CONFIG_DSP_CATALOG_TITLE "DSP Embedded Sensor Catalog"
+#endif
+
+/* -------------------------------------------------------------------------
  * Static assertions – catch invalid combinations at compile time
  *
  * Note: CONFIG_DSP_DAPS_GATEWAY_URL is a string and cannot be tested in

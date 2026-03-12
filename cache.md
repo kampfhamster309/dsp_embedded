@@ -2,8 +2,8 @@
 
 ## Current State
 
-**Last completed ticket:** DSP-304 – DSP message builders (dsp_build)
-**Next ticket:** DSP-401
+**Last completed ticket:** DSP-401 – Catalog state machine (dsp_catalog)
+**Next ticket:** DSP-402
 
 ## Project Structure
 
@@ -24,7 +24,8 @@ dsp_embedded/
 │   ├── dsp_json/            # cJSON v1.7.19 wrapper + DSP JSON-LD field helpers (DSP-301)
 │   ├── dsp_jsonld/          # Header-only: DSP JSON-LD context/type/field/state constants (DSP-302)
 │   ├── dsp_msg/             # DSP message schema validators (DSP-303)
-│   └── dsp_build/           # DSP outgoing message builders (DSP-304)
+│   ├── dsp_build/           # DSP outgoing message builders (DSP-304)
+│   └── dsp_catalog/         # Static catalog module + GET /catalog handler (DSP-401)
 ├── test/
 │   ├── CMakeLists.txt        # Host-native standalone CMake project
 │   ├── test_main.c           # Unity runner: UNITY_BEGIN/END + RUN_TEST calls
@@ -43,6 +44,7 @@ dsp_embedded/
 │   ├── test_dsp_jsonld.c    # 21 host-native tests for dsp_jsonld_ctx.h (DSP-302)
 │   ├── test_dsp_msg.c       # 31 host-native tests for dsp_msg validators (DSP-303)
 │   ├── test_dsp_build.c     # 36 host-native tests for dsp_build builders (DSP-304)
+│   ├── test_dsp_catalog.c   # 18 host-native tests for dsp_catalog (DSP-401)
 │   └── test_tickets_off_main.c # Unity runner for dsp_test_no_tickets binary
 │   ├── unity/                # git submodule: ThrowTheSwitch/Unity v2.6.0
 │   └── stubs/                # ESP-IDF header shims for host builds
@@ -101,6 +103,7 @@ dsp_embedded/
 - **dsp_jwt base64url decode**: RFC 4648 §5; no padding; processes 4-char groups → 3 bytes; trailing 2 chars → 1 byte, 3 chars → 2 bytes; 1 trailing char is invalid (-1). Returns decoded byte count or -1.
 - **dsp_daps**: `dsp_daps_init/deinit/is_initialized/request_token`. Error precedence: INVALID_ARG → NOT_INIT → DISABLED (CONFIG_DSP_ENABLE_DAPS_SHIM=0) → NO_URL (empty CONFIG_DSP_DAPS_GATEWAY_URL) → HTTP (stub). ESP_PLATFORM + shim enabled: HTTP path is a TODO stub returning ERR_HTTP. Host with default config always returns ERR_DISABLED. `dsp_daps.c` depends only on `dsp_config`; no mbedtls/http client yet.
 - **dsp_psk**: `dsp_psk_init/deinit/set/is_configured/get_identity/get_key`. Static buffers: `s_identity[64]`, `s_key[32]`. Constraints: identity 1–64 B, key 16–32 B (min 128-bit). `dsp_psk_apply(mbedtls_ssl_config *)` is ESP_PLATFORM-only; calls `mbedtls_ssl_conf_psk()` + restricts to PSK_WITH_AES_128_GCM_SHA256 / PSK_WITH_AES_256_GCM_SHA384. `deinit()` zero-wipes key material. 27 host-native tests.
+- **dsp_catalog**: `dsp_catalog_init/deinit/is_initialized`, `dsp_catalog_get_json(out,cap)` (delegates to `dsp_build_catalog` with `CONFIG_DSP_CATALOG_DATASET_ID` + `CONFIG_DSP_CATALOG_TITLE`), `dsp_catalog_register_handler()` (always-compiled; on host passes stub fn ptr to dsp_http). New config keys: `CONFIG_DSP_CATALOG_DATASET_ID` (default "urn:uuid:dsp-embedded-sensor-dataset-1"), `CONFIG_DSP_CATALOG_TITLE` (default "DSP Embedded Sensor Catalog") — added to both Kconfig and dsp_config.h. ESP_PLATFORM path has real `httpd_req_t` handler; host path uses `void *req` stub. 18 host-native tests.
 - **dsp_build**: Builders: `dsp_build_catalog(out,cap,dataset_id,title)`, `dsp_build_agreement_msg(out,cap,process_id,agreement_id)`, `dsp_build_negotiation_event(out,cap,process_id,state)`, `dsp_build_transfer_start(out,cap,process_id,endpoint_url)`, `dsp_build_transfer_completion(out,cap,process_id)`, `dsp_build_error(out,cap,code,reason)`. All take caller-supplied buffer; use `stamp_common()` + `finalise()` internals. Output verified by round-trip parse in tests. 36 host-native tests.
 - **dsp_msg**: Validators: `dsp_msg_validate_catalog_request/offer/agreement/transfer_request`. Each checks: NULL → ERR_NULL_INPUT, parse fail → ERR_PARSE, missing @context → ERR_MISSING_CONTEXT, wrong @type → ERR_WRONG_TYPE, missing required field → ERR_MISSING_FIELD. offer requires `dspace:processId` (string) + `dspace:offer` (object); agreement requires `processId` + `dspace:agreement` (object); transfer_request requires `processId` + `dspace:dataset` (string). catalog_request needs only @context + @type. Depends on dsp_json + dsp_jsonld. 31 host-native tests.
 - **dsp_jsonld**: Header-only component (`dsp_jsonld_ctx.h`). Defines: `DSP_JSONLD_CONTEXT_URL`, namespace prefixes (`DSPACE/DCAT/ODRL/DCT`), JSON-LD field names (`@context/@type/@id`), DSP field names (`dspace:processId` etc.), catalog/negotiation/transfer/error message types, negotiation states (`REQUESTED`…`TERMINATED`), transfer states (`REQUESTED/STARTED/COMPLETED/TERMINATED/SUSPENDED`). DEV-001 deviation log updated with static-context rationale. 21 host-native tests. No `.c` source; no entry needed in test executable sources.
