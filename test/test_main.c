@@ -310,6 +310,12 @@ extern void test_xfer_notify_not_called_when_already_transferring(void);
 extern void test_xfer_register_handlers_before_init_returns_invalid_state(void);
 extern void test_xfer_register_handlers_after_init_returns_ok(void);
 extern void test_xfer_is_initialized_false_after_deinit(void);
+extern void test_xfer_apply_complete_from_transferring(void);
+extern void test_xfer_apply_fail_from_transferring(void);
+extern void test_xfer_state_persists_after_complete(void);
+extern void test_xfer_state_persists_after_fail(void);
+extern void test_xfer_completed_absorbs_start_at_slot_level(void);
+extern void test_xfer_failed_absorbs_start_at_slot_level(void);
 
 /* -------------------------------------------------------------------------
  * test_dsp_catalog.c
@@ -777,6 +783,14 @@ int main(void)
     RUN_TEST(test_xfer_register_handlers_before_init_returns_invalid_state);
     RUN_TEST(test_xfer_register_handlers_after_init_returns_ok);
     RUN_TEST(test_xfer_is_initialized_false_after_deinit);
+
+    /* dsp_xfer terminal transitions (DSP-406) */
+    RUN_TEST(test_xfer_apply_complete_from_transferring);
+    RUN_TEST(test_xfer_apply_fail_from_transferring);
+    RUN_TEST(test_xfer_state_persists_after_complete);
+    RUN_TEST(test_xfer_state_persists_after_fail);
+    RUN_TEST(test_xfer_completed_absorbs_start_at_slot_level);
+    RUN_TEST(test_xfer_failed_absorbs_start_at_slot_level);
 
     /* dsp_catalog (DSP-401) */
     RUN_TEST(test_catalog_dataset_id_is_nonempty);

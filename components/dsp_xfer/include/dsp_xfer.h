@@ -3,7 +3,8 @@
  * @brief DSP transfer state machine and slot table.
  *
  * Implements the provider-side transfer flow:
- *   POST /transfers/start  →  INITIAL → TRANSFERRING
+ *   POST /transfers/start  →  INITIAL → TRANSFERRING          (DSP-405)
+ *   GET  /transfers/{id}   →  current state response           (DSP-406)
  *
  * States:
  *   INITIAL      – slot allocated, not yet started
@@ -128,7 +129,11 @@ bool             dsp_xfer_is_active(int idx);
  * ------------------------------------------------------------------------- */
 
 /**
- * @brief Register POST /transfers/start with the dsp_http server.
+ * @brief Register transfer HTTP handlers with the dsp_http server.
+ *
+ * Registers:
+ *   POST /transfers/start        – start a new transfer
+ *   GET  /transfers/{id} (wild)  – query transfer state by process ID
  *
  * @return ESP_ERR_INVALID_STATE if dsp_xfer_init() has not been called.
  */

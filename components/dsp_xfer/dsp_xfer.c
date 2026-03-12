@@ -194,6 +194,31 @@ bool dsp_xfer_is_active(int idx)
 #define XFER_BUF_SIZE 1024u
 
 /**
+ * Extract the transfer process-ID segment from a path of the form
+ * /transfers/<id>[/suffix].  Writes at most cap-1 bytes to out.
+ */
+static void extract_xfer_id(const char *uri, char *out, size_t cap)
+{
+    static const char prefix[] = "/transfers/";
+    const size_t      plen     = sizeof(prefix) - 1u;
+
+    if (!uri || strncmp(uri, prefix, plen) != 0) {
+        out[0] = '\0';
+        return;
+    }
+
+    const char *start = uri + plen;
+    const char *end   = strchr(start, '/');
+    size_t      len   = (end != NULL) ? (size_t)(end - start) : strlen(start);
+
+    if (len >= cap) {
+        len = cap - 1u;
+    }
+    memcpy(out, start, len);
+    out[len] = '\0';
+}
+
+/**
  * POST /transfers/start
  *
  * Receives a TransferRequestMessage.  Validates that the referenced
@@ -263,14 +288,65 @@ static esp_err_t xfer_start_post_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
+/**
+ * GET /transfers/{id}
+ *
+ * Returns the current transfer state:
+ *   TRANSFERRING → TransferStartMessage (in progress)
+ *   COMPLETED    → TransferCompletionMessage
+ *   FAILED       → dspace:Error
+ */
+static esp_err_t xfer_get_handler(httpd_req_t *req)
+{
+    char id[DSP_XFER_PID_LEN];
+    extract_xfer_id(req->uri, id, sizeof(id));
+
+    if (id[0] == '\0') {
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "missing transfer id");
+        return ESP_FAIL;
+    }
+
+    int idx = dsp_xfer_find_by_pid(id);
+    if (idx < 0) {
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "transfer not found");
+        return ESP_FAIL;
+    }
+
+    char resp[XFER_BUF_SIZE];
+    switch (dsp_xfer_get_state(idx)) {
+        case DSP_XFER_STATE_COMPLETED:
+            dsp_build_transfer_completion(resp, sizeof(resp), id);
+            break;
+        case DSP_XFER_STATE_FAILED:
+            dsp_build_error(resp, sizeof(resp), "FAILED", "transfer failed");
+            break;
+        default: /* TRANSFERRING or INITIAL */
+            dsp_build_transfer_start(resp, sizeof(resp), id, CONFIG_DSP_PROVIDER_ID);
+            break;
+    }
+
+    httpd_resp_set_type(req, "application/json");
+    httpd_resp_sendstr(req, resp);
+    return ESP_OK;
+}
+
 esp_err_t dsp_xfer_register_handlers(void)
 {
     if (!s_initialized) {
         return ESP_ERR_INVALID_STATE;
     }
-    return dsp_http_register_handler("/transfers/start",
-                                      DSP_HTTP_POST,
-                                      xfer_start_post_handler);
+
+    esp_err_t err;
+
+    err = dsp_http_register_handler("/transfers/start",
+                                     DSP_HTTP_POST,
+                                     xfer_start_post_handler);
+    if (err != ESP_OK) { return err; }
+
+    err = dsp_http_register_handler("/transfers/*",
+                                     DSP_HTTP_GET,
+                                     xfer_get_handler);
+    return err;
 }
 
 #else /* host build */
@@ -281,14 +357,29 @@ static esp_err_t xfer_start_host_stub(void *req)
     return ESP_OK;
 }
 
+static esp_err_t xfer_get_host_stub(void *req)
+{
+    (void)req;
+    return ESP_OK;
+}
+
 esp_err_t dsp_xfer_register_handlers(void)
 {
     if (!s_initialized) {
         return ESP_ERR_INVALID_STATE;
     }
-    return dsp_http_register_handler("/transfers/start",
-                                      DSP_HTTP_POST,
-                                      xfer_start_host_stub);
+
+    esp_err_t err;
+
+    err = dsp_http_register_handler("/transfers/start",
+                                     DSP_HTTP_POST,
+                                     xfer_start_host_stub);
+    if (err != ESP_OK) { return err; }
+
+    err = dsp_http_register_handler("/transfers/*",
+                                     DSP_HTTP_GET,
+                                     xfer_get_host_stub);
+    return err;
 }
 
 #endif /* ESP_PLATFORM */

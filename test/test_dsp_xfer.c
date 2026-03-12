@@ -1,12 +1,13 @@
 /**
  * @file test_dsp_xfer.c
- * @brief Host-native Unity tests for dsp_xfer (DSP-405).
+ * @brief Host-native Unity tests for dsp_xfer (DSP-405, DSP-406).
  *
- * 27 tests covering:
+ * 33 tests covering:
  *   - Pure SM function: all state × event transitions         ( 7 tests)
  *   - Slot table management                                   (13 tests)
  *   - Notify callback                                         ( 4 tests)
  *   - HTTP handler registration                               ( 3 tests)
+ *   - TRANSFERRING → COMPLETED / FAILED slot-level (DSP-406) ( 6 tests)
  */
 
 #include "unity.h"
@@ -309,4 +310,66 @@ void test_xfer_is_initialized_false_after_deinit(void)
     dsp_xfer_init();
     dsp_xfer_deinit();
     TEST_ASSERT_FALSE(dsp_xfer_is_initialized());
+}
+
+/* -------------------------------------------------------------------------
+ * 5. DSP-406: TRANSFERRING → COMPLETED / FAILED terminal transitions
+ * ------------------------------------------------------------------------- */
+
+void test_xfer_apply_complete_from_transferring(void)
+{
+    reset_xfer();
+    int idx = dsp_xfer_create(PID);
+    dsp_xfer_apply(idx, DSP_XFER_EVENT_START);
+    TEST_ASSERT_EQUAL(DSP_XFER_STATE_COMPLETED,
+                      dsp_xfer_apply(idx, DSP_XFER_EVENT_COMPLETE));
+}
+
+void test_xfer_apply_fail_from_transferring(void)
+{
+    reset_xfer();
+    int idx = dsp_xfer_create(PID);
+    dsp_xfer_apply(idx, DSP_XFER_EVENT_START);
+    TEST_ASSERT_EQUAL(DSP_XFER_STATE_FAILED,
+                      dsp_xfer_apply(idx, DSP_XFER_EVENT_FAIL));
+}
+
+void test_xfer_state_persists_after_complete(void)
+{
+    reset_xfer();
+    int idx = dsp_xfer_create(PID);
+    dsp_xfer_apply(idx, DSP_XFER_EVENT_START);
+    dsp_xfer_apply(idx, DSP_XFER_EVENT_COMPLETE);
+    TEST_ASSERT_EQUAL(DSP_XFER_STATE_COMPLETED, dsp_xfer_get_state(idx));
+}
+
+void test_xfer_state_persists_after_fail(void)
+{
+    reset_xfer();
+    int idx = dsp_xfer_create(PID);
+    dsp_xfer_apply(idx, DSP_XFER_EVENT_START);
+    dsp_xfer_apply(idx, DSP_XFER_EVENT_FAIL);
+    TEST_ASSERT_EQUAL(DSP_XFER_STATE_FAILED, dsp_xfer_get_state(idx));
+}
+
+void test_xfer_completed_absorbs_start_at_slot_level(void)
+{
+    reset_xfer();
+    int idx = dsp_xfer_create(PID);
+    dsp_xfer_apply(idx, DSP_XFER_EVENT_START);
+    dsp_xfer_apply(idx, DSP_XFER_EVENT_COMPLETE);
+    /* Cannot restart a completed transfer. */
+    TEST_ASSERT_EQUAL(DSP_XFER_STATE_COMPLETED,
+                      dsp_xfer_apply(idx, DSP_XFER_EVENT_START));
+}
+
+void test_xfer_failed_absorbs_start_at_slot_level(void)
+{
+    reset_xfer();
+    int idx = dsp_xfer_create(PID);
+    dsp_xfer_apply(idx, DSP_XFER_EVENT_START);
+    dsp_xfer_apply(idx, DSP_XFER_EVENT_FAIL);
+    /* Cannot restart a failed transfer. */
+    TEST_ASSERT_EQUAL(DSP_XFER_STATE_FAILED,
+                      dsp_xfer_apply(idx, DSP_XFER_EVENT_START));
 }
