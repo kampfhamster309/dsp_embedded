@@ -9,6 +9,9 @@
  */
 
 #include "dsp_psk.h"
+
+#if CONFIG_DSP_ENABLE_PSK
+
 #include <string.h>
 #include <stdbool.h>
 
@@ -134,3 +137,5 @@ esp_err_t dsp_psk_apply(mbedtls_ssl_config *conf)
 }
 
 #endif /* ESP_PLATFORM */
+
+#endif /* CONFIG_DSP_ENABLE_PSK */

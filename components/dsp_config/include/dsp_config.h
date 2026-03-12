@@ -24,6 +24,18 @@
  * ------------------------------------------------------------------------- */
 
 /**
+ * CONFIG_DSP_ENABLE_PSK
+ *
+ * Enables the Pre-Shared Key (PSK) authentication module (dsp_psk).
+ * When disabled, no PSK symbols are compiled in, reducing code and RAM.
+ * When enabled, PSK credentials can be stored and applied to TLS connections.
+ * Default: disabled.
+ */
+#ifndef CONFIG_DSP_ENABLE_PSK
+#define CONFIG_DSP_ENABLE_PSK 0
+#endif
+
+/**
  * CONFIG_DSP_ENABLE_CATALOG_REQUEST
  *
  * Enables the POST /catalog/request endpoint (DSP priority: SHOULD).

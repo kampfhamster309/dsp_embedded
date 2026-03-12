@@ -95,7 +95,6 @@ add_executable(dsp_test_runner
     test_dsp_jwt.c
     "${ROOT_DIR}/components/dsp_jwt/dsp_jwt.c"
     test_dsp_psk.c
-    "${ROOT_DIR}/components/dsp_psk/dsp_psk.c"
     test_dsp_daps.c
     "${ROOT_DIR}/components/dsp_daps/dsp_daps.c"
     test_dsp_json.c
@@ -217,6 +216,33 @@ target_include_directories(dsp_test_terminate_on PRIVATE
 )
 
 # ---------------------------------------------------------------------------
+# dsp_test_psk_on – PSK ENABLED path
+#
+# Compiled with -DCONFIG_DSP_ENABLE_PSK=1, overriding the default-0
+# fallback in dsp_config.h. Exercises the full dsp_psk API.
+# ---------------------------------------------------------------------------
+add_executable(dsp_test_psk_on
+    test_psk_on_main.c
+    test_psk_on.c
+    "${ROOT_DIR}/components/dsp_psk/dsp_psk.c"
+)
+
+target_compile_definitions(dsp_test_psk_on PRIVATE
+    CONFIG_DSP_ENABLE_PSK=1
+)
+
+target_link_libraries(dsp_test_psk_on PRIVATE
+    dsp_embedded_host
+    unity
+)
+
+target_include_directories(dsp_test_psk_on PRIVATE
+    ${COMPONENT_INCLUDE_DIRS}
+    ${STUBS_DIR}
+    ${UNITY_DIR}/src
+)
+
+# ---------------------------------------------------------------------------
 # CTest
 # ---------------------------------------------------------------------------
 enable_testing()
@@ -224,6 +250,7 @@ add_test(NAME dsp_test_runner             COMMAND dsp_test_runner)
 add_test(NAME dsp_test_no_tickets         COMMAND dsp_test_no_tickets)
 add_test(NAME dsp_test_terminate_on       COMMAND dsp_test_terminate_on)
 add_test(NAME dsp_test_catalog_request_on COMMAND dsp_test_catalog_request_on)
+add_test(NAME dsp_test_psk_on             COMMAND dsp_test_psk_on)
 
 # ---------------------------------------------------------------------------
 # Build summary

@@ -1,5 +1,15 @@
 menu "DSP Embedded Configuration"
 
+    config DSP_ENABLE_PSK
+        bool "Enable Pre-Shared Key (PSK) authentication module"
+        default n
+        help
+            Enables the dsp_psk component, which stores a PSK identity and
+            key pair and applies it to mbedTLS TLS connections. Use in
+            highly constrained environments where X.509 certificates are
+            not available. PSK is stored in NVS and applied via
+            dsp_psk_apply(). When disabled, no PSK symbols are compiled in.
+
     config DSP_ENABLE_CATALOG_REQUEST
         bool "Enable dynamic catalog request endpoint (POST /catalog/request)"
         default n

@@ -20,6 +20,10 @@
 
 #pragma once
 
+#include "dsp_config.h"
+
+#if CONFIG_DSP_ENABLE_PSK
+
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -134,3 +138,5 @@ esp_err_t dsp_psk_apply(mbedtls_ssl_config *conf);
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* CONFIG_DSP_ENABLE_PSK */
