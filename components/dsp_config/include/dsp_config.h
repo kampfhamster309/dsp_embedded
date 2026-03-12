@@ -135,6 +135,30 @@
 #endif
 
 /* -------------------------------------------------------------------------
+ * WiFi connection manager
+ * ------------------------------------------------------------------------- */
+
+/**
+ * CONFIG_DSP_WIFI_MAX_RETRY
+ *
+ * Number of reconnect attempts before dsp_wifi transitions to FAILED.
+ * Default: 5.
+ */
+#ifndef CONFIG_DSP_WIFI_MAX_RETRY
+#define CONFIG_DSP_WIFI_MAX_RETRY 5
+#endif
+
+/**
+ * CONFIG_DSP_WIFI_RECONNECT_DELAY_MS
+ *
+ * Milliseconds to wait between reconnect attempts.
+ * Default: 1000 ms.
+ */
+#ifndef CONFIG_DSP_WIFI_RECONNECT_DELAY_MS
+#define CONFIG_DSP_WIFI_RECONNECT_DELAY_MS 1000
+#endif
+
+/* -------------------------------------------------------------------------
  * Network
  * ------------------------------------------------------------------------- */
 

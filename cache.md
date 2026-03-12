@@ -2,8 +2,8 @@
 
 ## Current State
 
-**Last completed ticket:** DSP-104 – RAM usage instrumentation (dsp_mem)
-**Next ticket:** DSP-105 – WiFi connection manager (dsp_wifi)
+**Last completed ticket:** DSP-105 – WiFi connection manager (dsp_wifi)
+**Next ticket:** DSP-201 – X.509 certificate provisioning (dsp_identity)
 
 ## Project Structure
 
@@ -15,7 +15,8 @@ dsp_embedded/
 │   ├── dsp_config/           # Feature flags: Kconfig + dsp_config.h
 │   ├── dsp_mbedtls/         # TLS server context (DSP-101)
 │   ├── dsp_http/            # HTTP/1.1 server skeleton (DSP-102)
-│   └── dsp_mem/             # RAM instrumentation: dsp_mem_report() (DSP-104)
+│   ├── dsp_mem/             # RAM instrumentation: dsp_mem_report() (DSP-104)
+│   └── dsp_wifi/            # WiFi connection manager + SM (DSP-105)
 ├── test/
 │   ├── CMakeLists.txt        # Host-native standalone CMake project
 │   ├── test_main.c           # Unity runner: UNITY_BEGIN/END + RUN_TEST calls
@@ -25,6 +26,7 @@ dsp_embedded/
 │   ├── test_dsp_tls_tickets.c # 6 tests: session tickets ENABLED path (DSP-103)
 │   ├── test_tickets_off.c    # 7 tests: session tickets DISABLED path (DSP-103)
 │   ├── test_dsp_mem.c        # 16 host-native tests for dsp_mem (DSP-104)
+│   └── test_dsp_wifi.c      # 32 host-native tests for dsp_wifi SM + stubs (DSP-105)
 │   └── test_tickets_off_main.c # Unity runner for dsp_test_no_tickets binary
 │   ├── unity/                # git submodule: ThrowTheSwitch/Unity v2.6.0
 │   └── stubs/                # ESP-IDF header shims for host builds
@@ -63,6 +65,9 @@ dsp_embedded/
 - **Host build is in `test/`**, run with: `cd test && cmake -B build && cmake --build build && ctest --test-dir build`
 - `DSP_HOST_BUILD=1` is defined for host builds; `ESP_PLATFORM` is intentionally absent so `dsp_config.h` skips `sdkconfig.h`
 - `test/CMakeLists.txt` auto-discovers `components/*/include` — new component headers need no edits to the host build file; but component `.c` sources must be listed explicitly in `add_executable(dsp_test_runner ...)`
+- **dsp_wifi SM**: `dsp_wifi_sm_next(state, input, &retry, max_retry)` is platform-agnostic (always compiled). States: IDLE→CONNECTING→CONNECTED→RECONNECTING→FAILED. DISCONNECT from any state → IDLE + retry reset. Retry increments on DISCONNECTED; at max_retry → FAILED.
+- **dsp_wifi NVS**: namespace "dsp_wifi", keys "ssid"/"pass" (max 15-char NVS key). `dsp_wifi_store_credentials()` validates SSID non-empty/non-null.
+- **dsp_wifi reconnect**: `esp_timer` one-shot fires after `CONFIG_DSP_WIFI_RECONNECT_DELAY_MS` ms, calls `esp_wifi_connect()` + `DSP_WIFI_INPUT_RETRY`. Host stub: `init()` returns ESP_OK, `connect()` returns ESP_FAIL.
 - **dsp_mem_report(tag)**: call before/after component init to measure per-component RAM impact. On ESP_PLATFORM uses `heap_caps_get_free_size(MALLOC_CAP_INTERNAL)`, warns if < 30 KB free. On host returns fixed sentinel `DSP_MEM_HOST_FREE_B = 512 KB`. Called at "boot" in `app_main()`.
 - **DSP-103 two-binary strategy**: compile-time flags can't be tested in one binary. `dsp_test_runner` has `CONFIG_DSP_TLS_SESSION_TICKETS=1` (default). `dsp_test_no_tickets` compiles with `-DCONFIG_DSP_TLS_SESSION_TICKETS=0` and verifies the disabled path. Both registered in CTest. Run with: `ctest --test-dir test/build`
 - **dsp_http**: wraps `esp_http_server`; exposes `dsp_http_start(port)`, `dsp_http_stop()`, `dsp_http_register_handler(uri, method, fn)`, `dsp_http_is_running()`. Handler bridge uses `httpd_req_t::user_ctx` so a single `bridge_handler()` serves all routes. Server config: stack=4096, max_open_sockets=4, lru_purge_enable=true. Host `#else` stub preserves route table in static array (no real server) for test verification.

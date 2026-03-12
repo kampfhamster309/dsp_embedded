@@ -47,6 +47,42 @@ extern void test_http_esp_platform_absent_in_host_build(void);
 extern void test_http_host_build_flag_set(void);
 
 /* -------------------------------------------------------------------------
+ * test_dsp_wifi.c
+ * ------------------------------------------------------------------------- */
+extern void test_wifi_max_retry_default(void);
+extern void test_wifi_reconnect_delay_default(void);
+extern void test_sm_idle_connect_goes_connecting(void);
+extern void test_sm_idle_unhandled_inputs_stay_idle(void);
+extern void test_sm_connecting_connected_goes_connected(void);
+extern void test_sm_connecting_disconnected_increments_retry(void);
+extern void test_sm_connecting_disconnected_at_max_retry_goes_failed(void);
+extern void test_sm_connected_disconnected_goes_reconnecting(void);
+extern void test_sm_connected_disconnected_at_max_retry_goes_failed(void);
+extern void test_sm_connected_unhandled_stays_connected(void);
+extern void test_sm_reconnecting_retry_goes_connecting(void);
+extern void test_sm_reconnecting_connected_goes_connected(void);
+extern void test_sm_reconnecting_extra_disconnect_increments_retry(void);
+extern void test_sm_reconnecting_extra_disconnect_at_max_goes_failed(void);
+extern void test_sm_failed_stays_failed_on_all_inputs(void);
+extern void test_sm_disconnect_from_idle_stays_idle(void);
+extern void test_sm_disconnect_from_connecting_goes_idle(void);
+extern void test_sm_disconnect_from_connected_goes_idle(void);
+extern void test_sm_disconnect_from_reconnecting_goes_idle(void);
+extern void test_sm_disconnect_from_failed_goes_idle(void);
+extern void test_sm_full_happy_path(void);
+extern void test_sm_exhausted_retries_reach_failed(void);
+extern void test_wifi_init_returns_ok_on_host(void);
+extern void test_wifi_get_state_idle_after_init(void);
+extern void test_wifi_connect_returns_fail_on_host(void);
+extern void test_wifi_disconnect_safe_in_idle(void);
+extern void test_wifi_store_null_ssid_invalid_arg(void);
+extern void test_wifi_store_empty_ssid_invalid_arg(void);
+extern void test_wifi_store_null_password_invalid_arg(void);
+extern void test_wifi_store_valid_args_fails_on_host(void);
+extern void test_wifi_set_event_cb_null_clears(void);
+extern void test_wifi_deinit_safe(void);
+
+/* -------------------------------------------------------------------------
  * test_dsp_mem.c
  * ------------------------------------------------------------------------- */
 extern void test_mem_budget_total_is_130kb(void);
@@ -131,6 +167,40 @@ int main(void)
     RUN_TEST(test_http_is_running_false_after_stop);
     RUN_TEST(test_http_esp_platform_absent_in_host_build);
     RUN_TEST(test_http_host_build_flag_set);
+
+    /* dsp_wifi */
+    RUN_TEST(test_wifi_max_retry_default);
+    RUN_TEST(test_wifi_reconnect_delay_default);
+    RUN_TEST(test_sm_idle_connect_goes_connecting);
+    RUN_TEST(test_sm_idle_unhandled_inputs_stay_idle);
+    RUN_TEST(test_sm_connecting_connected_goes_connected);
+    RUN_TEST(test_sm_connecting_disconnected_increments_retry);
+    RUN_TEST(test_sm_connecting_disconnected_at_max_retry_goes_failed);
+    RUN_TEST(test_sm_connected_disconnected_goes_reconnecting);
+    RUN_TEST(test_sm_connected_disconnected_at_max_retry_goes_failed);
+    RUN_TEST(test_sm_connected_unhandled_stays_connected);
+    RUN_TEST(test_sm_reconnecting_retry_goes_connecting);
+    RUN_TEST(test_sm_reconnecting_connected_goes_connected);
+    RUN_TEST(test_sm_reconnecting_extra_disconnect_increments_retry);
+    RUN_TEST(test_sm_reconnecting_extra_disconnect_at_max_goes_failed);
+    RUN_TEST(test_sm_failed_stays_failed_on_all_inputs);
+    RUN_TEST(test_sm_disconnect_from_idle_stays_idle);
+    RUN_TEST(test_sm_disconnect_from_connecting_goes_idle);
+    RUN_TEST(test_sm_disconnect_from_connected_goes_idle);
+    RUN_TEST(test_sm_disconnect_from_reconnecting_goes_idle);
+    RUN_TEST(test_sm_disconnect_from_failed_goes_idle);
+    RUN_TEST(test_sm_full_happy_path);
+    RUN_TEST(test_sm_exhausted_retries_reach_failed);
+    RUN_TEST(test_wifi_init_returns_ok_on_host);
+    RUN_TEST(test_wifi_get_state_idle_after_init);
+    RUN_TEST(test_wifi_connect_returns_fail_on_host);
+    RUN_TEST(test_wifi_disconnect_safe_in_idle);
+    RUN_TEST(test_wifi_store_null_ssid_invalid_arg);
+    RUN_TEST(test_wifi_store_empty_ssid_invalid_arg);
+    RUN_TEST(test_wifi_store_null_password_invalid_arg);
+    RUN_TEST(test_wifi_store_valid_args_fails_on_host);
+    RUN_TEST(test_wifi_set_event_cb_null_clears);
+    RUN_TEST(test_wifi_deinit_safe);
 
     /* dsp_mem */
     RUN_TEST(test_mem_budget_total_is_130kb);

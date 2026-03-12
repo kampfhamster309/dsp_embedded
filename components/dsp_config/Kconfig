@@ -108,6 +108,25 @@ menu "DSP Embedded Configuration"
             is enforced end-to-end. Port 80 is acceptable in deployments
             where TLS termination is handled by a reverse proxy.
 
+    config DSP_WIFI_MAX_RETRY
+        int "Maximum WiFi reconnect attempts before giving up"
+        default 5
+        range 1 20
+        help
+            Number of times dsp_wifi will attempt to (re)connect before
+            transitioning to DSP_WIFI_STATE_FAILED and emitting
+            DSP_WIFI_EVT_FAILED. Set to a higher value for deployments
+            with intermittent connectivity.
+
+    config DSP_WIFI_RECONNECT_DELAY_MS
+        int "Delay between WiFi reconnect attempts (milliseconds)"
+        default 1000
+        range 100 30000
+        help
+            Time dsp_wifi waits after a disconnect before attempting to
+            reconnect. Increase for battery-powered nodes to avoid rapid
+            reconnect storms that waste energy.
+
     config DSP_LOG_LEVEL_VERBOSE
         bool "Enable verbose DSP protocol logging"
         default n
