@@ -229,6 +229,46 @@ extern void test_psk_get_null_after_deinit(void);
 extern void test_psk_esp_platform_absent_in_host_build(void);
 
 /* -------------------------------------------------------------------------
+ * test_dsp_build.c
+ * ------------------------------------------------------------------------- */
+extern void test_build_error_codes_distinct(void);
+extern void test_build_catalog_null_out_returns_null_arg(void);
+extern void test_build_catalog_null_dataset_id_returns_null_arg(void);
+extern void test_build_catalog_null_title_returns_null_arg(void);
+extern void test_build_catalog_buf_too_small_returns_error(void);
+extern void test_build_catalog_valid_returns_ok(void);
+extern void test_build_catalog_output_fields(void);
+extern void test_build_agreement_null_out_returns_null_arg(void);
+extern void test_build_agreement_null_process_id_returns_null_arg(void);
+extern void test_build_agreement_null_agreement_id_returns_null_arg(void);
+extern void test_build_agreement_buf_too_small_returns_error(void);
+extern void test_build_agreement_valid_returns_ok(void);
+extern void test_build_agreement_output_fields(void);
+extern void test_build_neg_event_null_out_returns_null_arg(void);
+extern void test_build_neg_event_null_process_id_returns_null_arg(void);
+extern void test_build_neg_event_null_state_returns_null_arg(void);
+extern void test_build_neg_event_buf_too_small_returns_error(void);
+extern void test_build_neg_event_valid_returns_ok(void);
+extern void test_build_neg_event_output_fields(void);
+extern void test_build_xfer_start_null_out_returns_null_arg(void);
+extern void test_build_xfer_start_null_process_id_returns_null_arg(void);
+extern void test_build_xfer_start_null_endpoint_returns_null_arg(void);
+extern void test_build_xfer_start_buf_too_small_returns_error(void);
+extern void test_build_xfer_start_valid_returns_ok(void);
+extern void test_build_xfer_start_output_fields(void);
+extern void test_build_xfer_completion_null_out_returns_null_arg(void);
+extern void test_build_xfer_completion_null_process_id_returns_null_arg(void);
+extern void test_build_xfer_completion_buf_too_small_returns_error(void);
+extern void test_build_xfer_completion_valid_returns_ok(void);
+extern void test_build_xfer_completion_output_fields(void);
+extern void test_build_error_null_out_returns_null_arg(void);
+extern void test_build_error_null_code_returns_null_arg(void);
+extern void test_build_error_null_reason_returns_null_arg(void);
+extern void test_build_error_buf_too_small_returns_error(void);
+extern void test_build_error_valid_returns_ok(void);
+extern void test_build_error_output_fields(void);
+
+/* -------------------------------------------------------------------------
  * test_dsp_msg.c
  * ------------------------------------------------------------------------- */
 extern void test_msg_error_codes_are_distinct(void);
@@ -549,6 +589,44 @@ int main(void)
     RUN_TEST(test_psk_get_key_content_correct);
     RUN_TEST(test_psk_get_null_after_deinit);
     RUN_TEST(test_psk_esp_platform_absent_in_host_build);
+
+    /* dsp_build message builders (DSP-304) */
+    RUN_TEST(test_build_error_codes_distinct);
+    RUN_TEST(test_build_catalog_null_out_returns_null_arg);
+    RUN_TEST(test_build_catalog_null_dataset_id_returns_null_arg);
+    RUN_TEST(test_build_catalog_null_title_returns_null_arg);
+    RUN_TEST(test_build_catalog_buf_too_small_returns_error);
+    RUN_TEST(test_build_catalog_valid_returns_ok);
+    RUN_TEST(test_build_catalog_output_fields);
+    RUN_TEST(test_build_agreement_null_out_returns_null_arg);
+    RUN_TEST(test_build_agreement_null_process_id_returns_null_arg);
+    RUN_TEST(test_build_agreement_null_agreement_id_returns_null_arg);
+    RUN_TEST(test_build_agreement_buf_too_small_returns_error);
+    RUN_TEST(test_build_agreement_valid_returns_ok);
+    RUN_TEST(test_build_agreement_output_fields);
+    RUN_TEST(test_build_neg_event_null_out_returns_null_arg);
+    RUN_TEST(test_build_neg_event_null_process_id_returns_null_arg);
+    RUN_TEST(test_build_neg_event_null_state_returns_null_arg);
+    RUN_TEST(test_build_neg_event_buf_too_small_returns_error);
+    RUN_TEST(test_build_neg_event_valid_returns_ok);
+    RUN_TEST(test_build_neg_event_output_fields);
+    RUN_TEST(test_build_xfer_start_null_out_returns_null_arg);
+    RUN_TEST(test_build_xfer_start_null_process_id_returns_null_arg);
+    RUN_TEST(test_build_xfer_start_null_endpoint_returns_null_arg);
+    RUN_TEST(test_build_xfer_start_buf_too_small_returns_error);
+    RUN_TEST(test_build_xfer_start_valid_returns_ok);
+    RUN_TEST(test_build_xfer_start_output_fields);
+    RUN_TEST(test_build_xfer_completion_null_out_returns_null_arg);
+    RUN_TEST(test_build_xfer_completion_null_process_id_returns_null_arg);
+    RUN_TEST(test_build_xfer_completion_buf_too_small_returns_error);
+    RUN_TEST(test_build_xfer_completion_valid_returns_ok);
+    RUN_TEST(test_build_xfer_completion_output_fields);
+    RUN_TEST(test_build_error_null_out_returns_null_arg);
+    RUN_TEST(test_build_error_null_code_returns_null_arg);
+    RUN_TEST(test_build_error_null_reason_returns_null_arg);
+    RUN_TEST(test_build_error_buf_too_small_returns_error);
+    RUN_TEST(test_build_error_valid_returns_ok);
+    RUN_TEST(test_build_error_output_fields);
 
     /* dsp_msg validators (DSP-303) */
     RUN_TEST(test_msg_error_codes_are_distinct);
