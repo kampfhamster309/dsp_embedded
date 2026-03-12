@@ -110,6 +110,8 @@ add_executable(dsp_test_runner
     "${ROOT_DIR}/components/dsp_catalog/dsp_catalog.c"
     test_dsp_neg.c
     "${ROOT_DIR}/components/dsp_neg/dsp_neg.c"
+    test_dsp_xfer.c
+    "${ROOT_DIR}/components/dsp_xfer/dsp_xfer.c"
 )
 
 target_link_libraries(dsp_test_runner PRIVATE

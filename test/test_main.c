@@ -277,6 +277,41 @@ extern void test_neg_apply_terminate_from_agreed(void);
 extern void test_neg_terminated_state_is_stable(void);
 
 /* -------------------------------------------------------------------------
+ * test_dsp_xfer.c
+ * ------------------------------------------------------------------------- */
+extern void test_xfer_sm_initial_start_goes_transferring(void);
+extern void test_xfer_sm_initial_unhandled_stays(void);
+extern void test_xfer_sm_transferring_complete_goes_completed(void);
+extern void test_xfer_sm_transferring_fail_goes_failed(void);
+extern void test_xfer_sm_transferring_unhandled_stays(void);
+extern void test_xfer_sm_completed_absorbs_all(void);
+extern void test_xfer_sm_failed_absorbs_all(void);
+extern void test_xfer_init_returns_ok(void);
+extern void test_xfer_is_initialized_false_before_init(void);
+extern void test_xfer_is_initialized_true_after_init(void);
+extern void test_xfer_count_active_zero_after_init(void);
+extern void test_xfer_create_null_pid_returns_neg1(void);
+extern void test_xfer_create_returns_zero_first_slot(void);
+extern void test_xfer_create_state_is_initial(void);
+extern void test_xfer_apply_start_gives_transferring(void);
+extern void test_xfer_get_state_invalid_index_returns_initial(void);
+extern void test_xfer_get_process_id_correct(void);
+extern void test_xfer_get_process_id_invalid_returns_null(void);
+extern void test_xfer_find_by_pid_returns_index(void);
+extern void test_xfer_find_by_pid_null_returns_neg1(void);
+extern void test_xfer_find_by_pid_not_found_returns_neg1(void);
+extern void test_xfer_table_overflow_returns_neg1(void);
+extern void test_xfer_count_active_tracks_creates(void);
+extern void test_xfer_double_init_safe(void);
+extern void test_xfer_notify_null_by_default(void);
+extern void test_xfer_notify_called_on_start(void);
+extern void test_xfer_notify_not_called_on_complete(void);
+extern void test_xfer_notify_not_called_when_already_transferring(void);
+extern void test_xfer_register_handlers_before_init_returns_invalid_state(void);
+extern void test_xfer_register_handlers_after_init_returns_ok(void);
+extern void test_xfer_is_initialized_false_after_deinit(void);
+
+/* -------------------------------------------------------------------------
  * test_dsp_catalog.c
  * ------------------------------------------------------------------------- */
 extern void test_catalog_dataset_id_is_nonempty(void);
@@ -709,6 +744,39 @@ int main(void)
     RUN_TEST(test_neg_apply_terminate_from_offered);
     RUN_TEST(test_neg_apply_terminate_from_agreed);
     RUN_TEST(test_neg_terminated_state_is_stable);
+
+    /* dsp_xfer SM + slot table + notify (DSP-405) */
+    RUN_TEST(test_xfer_sm_initial_start_goes_transferring);
+    RUN_TEST(test_xfer_sm_initial_unhandled_stays);
+    RUN_TEST(test_xfer_sm_transferring_complete_goes_completed);
+    RUN_TEST(test_xfer_sm_transferring_fail_goes_failed);
+    RUN_TEST(test_xfer_sm_transferring_unhandled_stays);
+    RUN_TEST(test_xfer_sm_completed_absorbs_all);
+    RUN_TEST(test_xfer_sm_failed_absorbs_all);
+    RUN_TEST(test_xfer_init_returns_ok);
+    RUN_TEST(test_xfer_is_initialized_false_before_init);
+    RUN_TEST(test_xfer_is_initialized_true_after_init);
+    RUN_TEST(test_xfer_count_active_zero_after_init);
+    RUN_TEST(test_xfer_create_null_pid_returns_neg1);
+    RUN_TEST(test_xfer_create_returns_zero_first_slot);
+    RUN_TEST(test_xfer_create_state_is_initial);
+    RUN_TEST(test_xfer_apply_start_gives_transferring);
+    RUN_TEST(test_xfer_get_state_invalid_index_returns_initial);
+    RUN_TEST(test_xfer_get_process_id_correct);
+    RUN_TEST(test_xfer_get_process_id_invalid_returns_null);
+    RUN_TEST(test_xfer_find_by_pid_returns_index);
+    RUN_TEST(test_xfer_find_by_pid_null_returns_neg1);
+    RUN_TEST(test_xfer_find_by_pid_not_found_returns_neg1);
+    RUN_TEST(test_xfer_table_overflow_returns_neg1);
+    RUN_TEST(test_xfer_count_active_tracks_creates);
+    RUN_TEST(test_xfer_double_init_safe);
+    RUN_TEST(test_xfer_notify_null_by_default);
+    RUN_TEST(test_xfer_notify_called_on_start);
+    RUN_TEST(test_xfer_notify_not_called_on_complete);
+    RUN_TEST(test_xfer_notify_not_called_when_already_transferring);
+    RUN_TEST(test_xfer_register_handlers_before_init_returns_invalid_state);
+    RUN_TEST(test_xfer_register_handlers_after_init_returns_ok);
+    RUN_TEST(test_xfer_is_initialized_false_after_deinit);
 
     /* dsp_catalog (DSP-401) */
     RUN_TEST(test_catalog_dataset_id_is_nonempty);
