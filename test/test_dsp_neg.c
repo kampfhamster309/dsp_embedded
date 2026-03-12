@@ -1,12 +1,13 @@
 /**
  * @file test_dsp_neg.c
- * @brief Host-native Unity tests for dsp_neg (DSP-402, DSP-403).
+ * @brief Host-native Unity tests for dsp_neg (DSP-402, DSP-403, DSP-404).
  *
- * 40 tests covering:
+ * 45 tests covering:
  *   - Pure SM function: all state × event transitions         (17 tests)
  *   - Slot table management                                   (17 tests)
  *   - HTTP handler registration                               ( 3 tests)
  *   - OFFERED → AGREED agree path (DSP-403)                  ( 3 tests)
+ *   - Termination – slot-level + flag disabled (DSP-404)     ( 5 tests)
  */
 
 #include "unity.h"
@@ -335,4 +336,51 @@ void test_neg_find_by_cpid_after_agree_still_works(void)
     dsp_neg_apply(idx, DSP_NEG_EVENT_OFFER);
     dsp_neg_apply(idx, DSP_NEG_EVENT_AGREE);
     TEST_ASSERT_EQUAL(idx, dsp_neg_find_by_cpid(CPID));
+}
+
+/* -------------------------------------------------------------------------
+ * 5. DSP-404: termination – slot-level and feature-flag (disabled path)
+ * ------------------------------------------------------------------------- */
+
+void test_neg_terminate_flag_is_disabled_by_default(void)
+{
+    TEST_ASSERT_EQUAL(0, CONFIG_DSP_ENABLE_NEGOTIATE_TERMINATE);
+}
+
+void test_neg_apply_terminate_from_requested(void)
+{
+    reset();
+    int idx = dsp_neg_create(CPID, PPID);
+    /* starts in REQUESTED */
+    TEST_ASSERT_EQUAL(DSP_NEG_STATE_TERMINATED,
+                      dsp_neg_apply(idx, DSP_NEG_EVENT_TERMINATE));
+}
+
+void test_neg_apply_terminate_from_offered(void)
+{
+    reset();
+    int idx = dsp_neg_create(CPID, PPID);
+    dsp_neg_apply(idx, DSP_NEG_EVENT_OFFER);
+    TEST_ASSERT_EQUAL(DSP_NEG_STATE_TERMINATED,
+                      dsp_neg_apply(idx, DSP_NEG_EVENT_TERMINATE));
+}
+
+void test_neg_apply_terminate_from_agreed(void)
+{
+    reset();
+    int idx = dsp_neg_create(CPID, PPID);
+    dsp_neg_apply(idx, DSP_NEG_EVENT_OFFER);
+    dsp_neg_apply(idx, DSP_NEG_EVENT_AGREE);
+    TEST_ASSERT_EQUAL(DSP_NEG_STATE_TERMINATED,
+                      dsp_neg_apply(idx, DSP_NEG_EVENT_TERMINATE));
+}
+
+void test_neg_terminated_state_is_stable(void)
+{
+    reset();
+    int idx = dsp_neg_create(CPID, PPID);
+    dsp_neg_apply(idx, DSP_NEG_EVENT_TERMINATE);
+    /* second terminate on an already-TERMINATED slot stays TERMINATED */
+    TEST_ASSERT_EQUAL(DSP_NEG_STATE_TERMINATED,
+                      dsp_neg_apply(idx, DSP_NEG_EVENT_TERMINATE));
 }

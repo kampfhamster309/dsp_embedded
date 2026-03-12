@@ -270,6 +270,11 @@ extern void test_neg_double_init_safe(void);
 extern void test_neg_apply_agree_event_from_offered(void);
 extern void test_neg_state_is_agreed_after_offer_then_agree(void);
 extern void test_neg_find_by_cpid_after_agree_still_works(void);
+extern void test_neg_terminate_flag_is_disabled_by_default(void);
+extern void test_neg_apply_terminate_from_requested(void);
+extern void test_neg_apply_terminate_from_offered(void);
+extern void test_neg_apply_terminate_from_agreed(void);
+extern void test_neg_terminated_state_is_stable(void);
 
 /* -------------------------------------------------------------------------
  * test_dsp_catalog.c
@@ -697,6 +702,13 @@ int main(void)
     RUN_TEST(test_neg_apply_agree_event_from_offered);
     RUN_TEST(test_neg_state_is_agreed_after_offer_then_agree);
     RUN_TEST(test_neg_find_by_cpid_after_agree_still_works);
+
+    /* dsp_neg termination – disabled flag + slot-level (DSP-404) */
+    RUN_TEST(test_neg_terminate_flag_is_disabled_by_default);
+    RUN_TEST(test_neg_apply_terminate_from_requested);
+    RUN_TEST(test_neg_apply_terminate_from_offered);
+    RUN_TEST(test_neg_apply_terminate_from_agreed);
+    RUN_TEST(test_neg_terminated_state_is_stable);
 
     /* dsp_catalog (DSP-401) */
     RUN_TEST(test_catalog_dataset_id_is_nonempty);

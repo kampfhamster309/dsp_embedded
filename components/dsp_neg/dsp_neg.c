@@ -282,6 +282,57 @@ static esp_err_t offers_post_handler(httpd_req_t *req)
 }
 
 /**
+ * POST /negotiations/terminate
+ *
+ * Receives a ContractNegotiationTerminationMessage.  Applies TERMINATE to
+ * the named negotiation (any active state → TERMINATED).
+ * Only compiled when CONFIG_DSP_ENABLE_NEGOTIATE_TERMINATE == 1.
+ */
+#if CONFIG_DSP_ENABLE_NEGOTIATE_TERMINATE
+static esp_err_t terminate_post_handler(httpd_req_t *req)
+{
+    char body[NEG_BUF_SIZE];
+    int  recv_len = httpd_req_recv(req, body, sizeof(body) - 1u);
+    if (recv_len <= 0) {
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "empty body");
+        return ESP_FAIL;
+    }
+    body[recv_len] = '\0';
+
+    cJSON *msg = dsp_json_parse(body);
+    if (!msg) {
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "invalid JSON");
+        return ESP_FAIL;
+    }
+
+    char cpid[DSP_NEG_PID_LEN] = "";
+    dsp_json_get_string(msg, DSP_JSONLD_FIELD_PROCESS_ID, cpid, sizeof(cpid));
+    dsp_json_delete(msg);
+
+    if (cpid[0] == '\0') {
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "missing dspace:processId");
+        return ESP_FAIL;
+    }
+
+    int idx = dsp_neg_find_by_cpid(cpid);
+    if (idx < 0) {
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "negotiation not found");
+        return ESP_FAIL;
+    }
+
+    dsp_neg_apply(idx, DSP_NEG_EVENT_TERMINATE);
+
+    char resp[NEG_BUF_SIZE];
+    dsp_build_negotiation_event(resp, sizeof(resp), cpid, DSP_JSONLD_NEG_STATE_TERMINATED);
+
+    httpd_resp_set_type(req, "application/json");
+    httpd_resp_sendstr(req, resp);
+    ESP_LOGI(TAG, "negotiation terminated: slot=%d cpid=%s", idx, cpid);
+    return ESP_OK;
+}
+#endif /* CONFIG_DSP_ENABLE_NEGOTIATE_TERMINATE */
+
+/**
  * POST /negotiations/{id}/agree
  *
  * Receives a ContractAgreementMessage.  Transitions OFFERED → AGREED and
@@ -376,6 +427,13 @@ esp_err_t dsp_neg_register_handlers(void)
                                      agree_post_handler);
     if (err != ESP_OK) { return err; }
 
+#if CONFIG_DSP_ENABLE_NEGOTIATE_TERMINATE
+    err = dsp_http_register_handler("/negotiations/terminate",
+                                     DSP_HTTP_POST,
+                                     terminate_post_handler);
+    if (err != ESP_OK) { return err; }
+#endif
+
     err = dsp_http_register_handler("/negotiations/*",
                                      DSP_HTTP_GET,
                                      neg_get_handler);
@@ -402,6 +460,14 @@ static esp_err_t neg_get_host_stub(void *req)
     return ESP_OK;
 }
 
+#if CONFIG_DSP_ENABLE_NEGOTIATE_TERMINATE
+static esp_err_t neg_terminate_host_stub(void *req)
+{
+    (void)req;
+    return ESP_OK;
+}
+#endif
+
 esp_err_t dsp_neg_register_handlers(void)
 {
     if (!s_initialized) {
@@ -419,6 +485,13 @@ esp_err_t dsp_neg_register_handlers(void)
                                      DSP_HTTP_POST,
                                      neg_agree_host_stub);
     if (err != ESP_OK) { return err; }
+
+#if CONFIG_DSP_ENABLE_NEGOTIATE_TERMINATE
+    err = dsp_http_register_handler("/negotiations/terminate",
+                                     DSP_HTTP_POST,
+                                     neg_terminate_host_stub);
+    if (err != ESP_OK) { return err; }
+#endif
 
     err = dsp_http_register_handler("/negotiations/*",
                                      DSP_HTTP_GET,

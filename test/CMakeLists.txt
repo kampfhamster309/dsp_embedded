@@ -153,11 +153,41 @@ target_include_directories(dsp_test_no_tickets PRIVATE
 )
 
 # ---------------------------------------------------------------------------
+# dsp_test_terminate_on – negotiate-terminate ENABLED path
+#
+# Compiled with -DCONFIG_DSP_ENABLE_NEGOTIATE_TERMINATE=1, overriding the
+# default-0 fallback in dsp_config.h.  Exercises the #if block that registers
+# POST /negotiations/terminate and its host stub in dsp_neg.c.
+# ---------------------------------------------------------------------------
+add_executable(dsp_test_terminate_on
+    test_terminate_on_main.c
+    test_terminate_on.c
+    "${ROOT_DIR}/components/dsp_neg/dsp_neg.c"
+    "${ROOT_DIR}/components/dsp_http/dsp_http.c"
+)
+
+target_compile_definitions(dsp_test_terminate_on PRIVATE
+    CONFIG_DSP_ENABLE_NEGOTIATE_TERMINATE=1
+)
+
+target_link_libraries(dsp_test_terminate_on PRIVATE
+    dsp_embedded_host
+    unity
+)
+
+target_include_directories(dsp_test_terminate_on PRIVATE
+    ${COMPONENT_INCLUDE_DIRS}
+    ${STUBS_DIR}
+    ${UNITY_DIR}/src
+)
+
+# ---------------------------------------------------------------------------
 # CTest
 # ---------------------------------------------------------------------------
 enable_testing()
-add_test(NAME dsp_test_runner    COMMAND dsp_test_runner)
-add_test(NAME dsp_test_no_tickets COMMAND dsp_test_no_tickets)
+add_test(NAME dsp_test_runner      COMMAND dsp_test_runner)
+add_test(NAME dsp_test_no_tickets  COMMAND dsp_test_no_tickets)
+add_test(NAME dsp_test_terminate_on COMMAND dsp_test_terminate_on)
 
 # ---------------------------------------------------------------------------
 # Build summary
