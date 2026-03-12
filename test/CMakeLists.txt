@@ -90,6 +90,8 @@ add_executable(dsp_test_runner
     "${ROOT_DIR}/components/dsp_mem/dsp_mem.c"
     test_dsp_wifi.c
     "${ROOT_DIR}/components/dsp_wifi/dsp_wifi.c"
+    test_dsp_identity.c
+    "${ROOT_DIR}/components/dsp_identity/dsp_identity.c"
 )
 
 target_link_libraries(dsp_test_runner PRIVATE

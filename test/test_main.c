@@ -47,6 +47,30 @@ extern void test_http_esp_platform_absent_in_host_build(void);
 extern void test_http_host_build_flag_set(void);
 
 /* -------------------------------------------------------------------------
+ * test_dsp_identity.c
+ * ------------------------------------------------------------------------- */
+extern void test_identity_init_returns_ok(void);
+extern void test_identity_is_provisioned_false_before_init(void);
+extern void test_identity_is_provisioned_true_after_init(void);
+extern void test_identity_is_provisioned_false_after_deinit(void);
+extern void test_identity_double_deinit_safe(void);
+extern void test_identity_double_init_safe(void);
+extern void test_identity_get_cert_null_out_len_returns_null(void);
+extern void test_identity_get_cert_returns_nonnull_after_init(void);
+extern void test_identity_get_cert_returns_nonzero_len_after_init(void);
+extern void test_identity_get_cert_returns_null_before_init(void);
+extern void test_identity_get_cert_returns_null_after_deinit(void);
+extern void test_identity_get_key_null_out_len_returns_null(void);
+extern void test_identity_get_key_returns_nonnull_after_init(void);
+extern void test_identity_get_key_returns_nonzero_len_after_init(void);
+extern void test_identity_get_key_returns_null_before_init(void);
+extern void test_identity_get_key_returns_null_after_deinit(void);
+extern void test_identity_stub_cert_len_is_small(void);
+extern void test_identity_stub_key_len_is_small(void);
+extern void test_identity_stub_cert_starts_with_der_sequence_tag(void);
+extern void test_identity_esp_platform_absent_in_host_build(void);
+
+/* -------------------------------------------------------------------------
  * test_dsp_wifi.c
  * ------------------------------------------------------------------------- */
 extern void test_wifi_max_retry_default(void);
@@ -167,6 +191,28 @@ int main(void)
     RUN_TEST(test_http_is_running_false_after_stop);
     RUN_TEST(test_http_esp_platform_absent_in_host_build);
     RUN_TEST(test_http_host_build_flag_set);
+
+    /* dsp_identity */
+    RUN_TEST(test_identity_init_returns_ok);
+    RUN_TEST(test_identity_is_provisioned_false_before_init);
+    RUN_TEST(test_identity_is_provisioned_true_after_init);
+    RUN_TEST(test_identity_is_provisioned_false_after_deinit);
+    RUN_TEST(test_identity_double_deinit_safe);
+    RUN_TEST(test_identity_double_init_safe);
+    RUN_TEST(test_identity_get_cert_null_out_len_returns_null);
+    RUN_TEST(test_identity_get_cert_returns_nonnull_after_init);
+    RUN_TEST(test_identity_get_cert_returns_nonzero_len_after_init);
+    RUN_TEST(test_identity_get_cert_returns_null_before_init);
+    RUN_TEST(test_identity_get_cert_returns_null_after_deinit);
+    RUN_TEST(test_identity_get_key_null_out_len_returns_null);
+    RUN_TEST(test_identity_get_key_returns_nonnull_after_init);
+    RUN_TEST(test_identity_get_key_returns_nonzero_len_after_init);
+    RUN_TEST(test_identity_get_key_returns_null_before_init);
+    RUN_TEST(test_identity_get_key_returns_null_after_deinit);
+    RUN_TEST(test_identity_stub_cert_len_is_small);
+    RUN_TEST(test_identity_stub_key_len_is_small);
+    RUN_TEST(test_identity_stub_cert_starts_with_der_sequence_tag);
+    RUN_TEST(test_identity_esp_platform_absent_in_host_build);
 
     /* dsp_wifi */
     RUN_TEST(test_wifi_max_retry_default);
