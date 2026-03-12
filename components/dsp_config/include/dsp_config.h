@@ -234,6 +234,8 @@
  * DSP_ENABLE_DAPS_SHIM) enforces that the URL is set via menuconfig.
  * ------------------------------------------------------------------------- */
 
+#ifdef ESP_PLATFORM
 #if CONFIG_DSP_PSRAM_ENABLE && !defined(CONFIG_SPIRAM)
 #warning "CONFIG_DSP_PSRAM_ENABLE requires CONFIG_SPIRAM=y in sdkconfig"
+#endif
 #endif
