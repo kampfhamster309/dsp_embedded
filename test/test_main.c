@@ -267,6 +267,9 @@ extern void test_neg_get_pids_invalid_index_returns_null(void);
 extern void test_neg_register_handlers_before_init_returns_invalid_state(void);
 extern void test_neg_register_handlers_after_init_returns_ok(void);
 extern void test_neg_double_init_safe(void);
+extern void test_neg_apply_agree_event_from_offered(void);
+extern void test_neg_state_is_agreed_after_offer_then_agree(void);
+extern void test_neg_find_by_cpid_after_agree_still_works(void);
 
 /* -------------------------------------------------------------------------
  * test_dsp_catalog.c
@@ -689,6 +692,11 @@ int main(void)
     RUN_TEST(test_neg_register_handlers_before_init_returns_invalid_state);
     RUN_TEST(test_neg_register_handlers_after_init_returns_ok);
     RUN_TEST(test_neg_double_init_safe);
+
+    /* dsp_neg agree path (DSP-403) */
+    RUN_TEST(test_neg_apply_agree_event_from_offered);
+    RUN_TEST(test_neg_state_is_agreed_after_offer_then_agree);
+    RUN_TEST(test_neg_find_by_cpid_after_agree_still_works);
 
     /* dsp_catalog (DSP-401) */
     RUN_TEST(test_catalog_dataset_id_is_nonempty);

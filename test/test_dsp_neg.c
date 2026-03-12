@@ -1,11 +1,12 @@
 /**
  * @file test_dsp_neg.c
- * @brief Host-native Unity tests for dsp_neg (DSP-402).
+ * @brief Host-native Unity tests for dsp_neg (DSP-402, DSP-403).
  *
- * 37 tests covering:
+ * 40 tests covering:
  *   - Pure SM function: all state × event transitions         (17 tests)
  *   - Slot table management                                   (17 tests)
  *   - HTTP handler registration                               ( 3 tests)
+ *   - OFFERED → AGREED agree path (DSP-403)                  ( 3 tests)
  */
 
 #include "unity.h"
@@ -303,4 +304,35 @@ void test_neg_double_init_safe(void)
     dsp_neg_create(CPID, PPID);
     TEST_ASSERT_EQUAL(1, dsp_neg_count_active()); /* slot survived second init */
     dsp_neg_deinit();
+}
+
+/* -------------------------------------------------------------------------
+ * 4. DSP-403: OFFERED → AGREED agree path
+ * ------------------------------------------------------------------------- */
+
+void test_neg_apply_agree_event_from_offered(void)
+{
+    reset();
+    int idx = dsp_neg_create(CPID, PPID);
+    dsp_neg_apply(idx, DSP_NEG_EVENT_OFFER);   /* REQUESTED → OFFERED */
+    TEST_ASSERT_EQUAL(DSP_NEG_STATE_AGREED,
+                      dsp_neg_apply(idx, DSP_NEG_EVENT_AGREE));
+}
+
+void test_neg_state_is_agreed_after_offer_then_agree(void)
+{
+    reset();
+    int idx = dsp_neg_create(CPID, PPID);
+    dsp_neg_apply(idx, DSP_NEG_EVENT_OFFER);
+    dsp_neg_apply(idx, DSP_NEG_EVENT_AGREE);
+    TEST_ASSERT_EQUAL(DSP_NEG_STATE_AGREED, dsp_neg_get_state(idx));
+}
+
+void test_neg_find_by_cpid_after_agree_still_works(void)
+{
+    reset();
+    int idx = dsp_neg_create(CPID, PPID);
+    dsp_neg_apply(idx, DSP_NEG_EVENT_OFFER);
+    dsp_neg_apply(idx, DSP_NEG_EVENT_AGREE);
+    TEST_ASSERT_EQUAL(idx, dsp_neg_find_by_cpid(CPID));
 }

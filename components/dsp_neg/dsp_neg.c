@@ -195,6 +195,31 @@ bool dsp_neg_is_active(int idx)
 #define NEG_BUF_SIZE 1024u
 
 /**
+ * Extract the negotiation process-ID segment from a path of the form
+ * /negotiations/<id>[/suffix].  Writes at most cap-1 bytes to out.
+ */
+static void extract_neg_id(const char *uri, char *out, size_t cap)
+{
+    static const char prefix[] = "/negotiations/";
+    const size_t      plen     = sizeof(prefix) - 1u;
+
+    if (!uri || strncmp(uri, prefix, plen) != 0) {
+        out[0] = '\0';
+        return;
+    }
+
+    const char *start = uri + plen;
+    const char *end   = strchr(start, '/');
+    size_t      len   = (end != NULL) ? (size_t)(end - start) : strlen(start);
+
+    if (len >= cap) {
+        len = cap - 1u;
+    }
+    memcpy(out, start, len);
+    out[len] = '\0';
+}
+
+/**
  * POST /negotiations/offers
  *
  * Receives a ContractRequestMessage.  Allocates a slot, applies the OFFER
@@ -256,14 +281,105 @@ static esp_err_t offers_post_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
+/**
+ * POST /negotiations/{id}/agree
+ *
+ * Receives a ContractAgreementMessage.  Transitions OFFERED → AGREED and
+ * responds with a ContractNegotiationEventMessage carrying state AGREED.
+ */
+static esp_err_t agree_post_handler(httpd_req_t *req)
+{
+    char id[DSP_NEG_PID_LEN];
+    extract_neg_id(req->uri, id, sizeof(id));
+
+    if (id[0] == '\0') {
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "missing negotiation id");
+        return ESP_FAIL;
+    }
+
+    int idx = dsp_neg_find_by_cpid(id);
+    if (idx < 0) {
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "negotiation not found");
+        return ESP_FAIL;
+    }
+
+    dsp_neg_state_t new_state = dsp_neg_apply(idx, DSP_NEG_EVENT_AGREE);
+    if (new_state != DSP_NEG_STATE_AGREED) {
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "invalid state for agree");
+        return ESP_FAIL;
+    }
+
+    char resp[NEG_BUF_SIZE];
+    dsp_build_negotiation_event(resp, sizeof(resp), id, DSP_JSONLD_NEG_STATE_AGREED);
+
+    httpd_resp_set_type(req, "application/json");
+    httpd_resp_sendstr(req, resp);
+    ESP_LOGI(TAG, "agreement accepted: slot=%d cpid=%s", idx, id);
+    return ESP_OK;
+}
+
+/**
+ * GET /negotiations/{id}
+ *
+ * Returns the current negotiation state as a ContractNegotiationEventMessage.
+ */
+static esp_err_t neg_get_handler(httpd_req_t *req)
+{
+    char id[DSP_NEG_PID_LEN];
+    extract_neg_id(req->uri, id, sizeof(id));
+
+    if (id[0] == '\0') {
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "missing negotiation id");
+        return ESP_FAIL;
+    }
+
+    int idx = dsp_neg_find_by_cpid(id);
+    if (idx < 0) {
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "negotiation not found");
+        return ESP_FAIL;
+    }
+
+    const char *state_str;
+    switch (dsp_neg_get_state(idx)) {
+        case DSP_NEG_STATE_REQUESTED:  state_str = DSP_JSONLD_NEG_STATE_REQUESTED;  break;
+        case DSP_NEG_STATE_OFFERED:    state_str = DSP_JSONLD_NEG_STATE_OFFERED;    break;
+        case DSP_NEG_STATE_AGREED:     state_str = DSP_JSONLD_NEG_STATE_AGREED;     break;
+        case DSP_NEG_STATE_VERIFIED:   state_str = DSP_JSONLD_NEG_STATE_VERIFIED;   break;
+        case DSP_NEG_STATE_FINALIZED:  state_str = DSP_JSONLD_NEG_STATE_FINALIZED;  break;
+        case DSP_NEG_STATE_TERMINATED: state_str = DSP_JSONLD_NEG_STATE_TERMINATED; break;
+        default:                       state_str = DSP_JSONLD_NEG_STATE_REQUESTED;  break;
+    }
+
+    char resp[NEG_BUF_SIZE];
+    dsp_build_negotiation_event(resp, sizeof(resp), id, state_str);
+
+    httpd_resp_set_type(req, "application/json");
+    httpd_resp_sendstr(req, resp);
+    return ESP_OK;
+}
+
 esp_err_t dsp_neg_register_handlers(void)
 {
     if (!s_initialized) {
         return ESP_ERR_INVALID_STATE;
     }
-    return dsp_http_register_handler("/negotiations/offers",
-                                      DSP_HTTP_POST,
-                                      offers_post_handler);
+
+    esp_err_t err;
+
+    err = dsp_http_register_handler("/negotiations/offers",
+                                     DSP_HTTP_POST,
+                                     offers_post_handler);
+    if (err != ESP_OK) { return err; }
+
+    err = dsp_http_register_handler("/negotiations/*/agree",
+                                     DSP_HTTP_POST,
+                                     agree_post_handler);
+    if (err != ESP_OK) { return err; }
+
+    err = dsp_http_register_handler("/negotiations/*",
+                                     DSP_HTTP_GET,
+                                     neg_get_handler);
+    return err;
 }
 
 #else /* host build */
@@ -274,14 +390,40 @@ static esp_err_t neg_offers_host_stub(void *req)
     return ESP_OK;
 }
 
+static esp_err_t neg_agree_host_stub(void *req)
+{
+    (void)req;
+    return ESP_OK;
+}
+
+static esp_err_t neg_get_host_stub(void *req)
+{
+    (void)req;
+    return ESP_OK;
+}
+
 esp_err_t dsp_neg_register_handlers(void)
 {
     if (!s_initialized) {
         return ESP_ERR_INVALID_STATE;
     }
-    return dsp_http_register_handler("/negotiations/offers",
-                                      DSP_HTTP_POST,
-                                      neg_offers_host_stub);
+
+    esp_err_t err;
+
+    err = dsp_http_register_handler("/negotiations/offers",
+                                     DSP_HTTP_POST,
+                                     neg_offers_host_stub);
+    if (err != ESP_OK) { return err; }
+
+    err = dsp_http_register_handler("/negotiations/*/agree",
+                                     DSP_HTTP_POST,
+                                     neg_agree_host_stub);
+    if (err != ESP_OK) { return err; }
+
+    err = dsp_http_register_handler("/negotiations/*",
+                                     DSP_HTTP_GET,
+                                     neg_get_host_stub);
+    return err;
 }
 
 #endif /* ESP_PLATFORM */

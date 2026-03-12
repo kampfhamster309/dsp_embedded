@@ -95,6 +95,7 @@ esp_err_t dsp_http_start(uint16_t port)
     cfg.max_open_sockets = 4;             /* max concurrent connections      */
     cfg.max_uri_handlers = DSP_HTTP_MAX_ROUTES;
     cfg.lru_purge_enable = true;          /* close LRU socket when table full */
+    cfg.uri_match_fn     = httpd_uri_match_wildcard; /* enable /path/*/sub patterns */
 
     esp_err_t err = httpd_start(&s_server, &cfg);
     if (err != ESP_OK) {
