@@ -200,6 +200,15 @@
  * ------------------------------------------------------------------------- */
 
 /**
+ * CONFIG_DSP_PROVIDER_ID
+ *
+ * IRI used as the provider's participant identifier in DSP messages.
+ */
+#ifndef CONFIG_DSP_PROVIDER_ID
+#define CONFIG_DSP_PROVIDER_ID "urn:uuid:dsp-embedded-provider-1"
+#endif
+
+/**
  * CONFIG_DSP_CATALOG_DATASET_ID
  *
  * IRI identifying the single dataset entry in the GET /catalog response.

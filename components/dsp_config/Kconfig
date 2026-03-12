@@ -127,6 +127,14 @@ menu "DSP Embedded Configuration"
             reconnect. Increase for battery-powered nodes to avoid rapid
             reconnect storms that waste energy.
 
+    config DSP_PROVIDER_ID
+        string "Provider participant identifier (IRI)"
+        default "urn:uuid:dsp-embedded-provider-1"
+        help
+            The IRI used as the provider's participant identifier in DSP
+            negotiation and transfer messages (dspace:providerId field).
+            Should match the identifier registered with any connected DAPS.
+
     config DSP_CATALOG_DATASET_ID
         string "Static catalog dataset IRI"
         default "urn:uuid:dsp-embedded-sensor-dataset-1"

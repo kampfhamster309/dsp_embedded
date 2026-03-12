@@ -229,6 +229,46 @@ extern void test_psk_get_null_after_deinit(void);
 extern void test_psk_esp_platform_absent_in_host_build(void);
 
 /* -------------------------------------------------------------------------
+ * test_dsp_neg.c
+ * ------------------------------------------------------------------------- */
+extern void test_neg_sm_requested_offer_goes_offered(void);
+extern void test_neg_sm_requested_agree_goes_agreed(void);
+extern void test_neg_sm_requested_terminate_goes_terminated(void);
+extern void test_neg_sm_requested_unhandled_stays(void);
+extern void test_neg_sm_offered_agree_goes_agreed(void);
+extern void test_neg_sm_offered_terminate_goes_terminated(void);
+extern void test_neg_sm_offered_unhandled_stays(void);
+extern void test_neg_sm_agreed_verify_goes_verified(void);
+extern void test_neg_sm_agreed_terminate_goes_terminated(void);
+extern void test_neg_sm_agreed_unhandled_stays(void);
+extern void test_neg_sm_verified_finalize_goes_finalized(void);
+extern void test_neg_sm_verified_terminate_goes_terminated(void);
+extern void test_neg_sm_verified_unhandled_stays(void);
+extern void test_neg_sm_finalized_absorbs_all_events(void);
+extern void test_neg_sm_terminated_absorbs_all_events(void);
+extern void test_neg_sm_full_happy_path(void);
+extern void test_neg_init_returns_ok(void);
+extern void test_neg_count_active_zero_after_init(void);
+extern void test_neg_create_null_cpid_returns_neg1(void);
+extern void test_neg_create_null_ppid_returns_neg1(void);
+extern void test_neg_create_returns_zero_first_slot(void);
+extern void test_neg_create_state_is_requested(void);
+extern void test_neg_apply_offer_event_gives_offered(void);
+extern void test_neg_get_consumer_pid_correct(void);
+extern void test_neg_get_provider_pid_correct(void);
+extern void test_neg_find_by_cpid_returns_correct_index(void);
+extern void test_neg_find_by_cpid_returns_neg1_if_not_found(void);
+extern void test_neg_find_by_cpid_null_returns_neg1(void);
+extern void test_neg_table_overflow_returns_neg1(void);
+extern void test_neg_count_active_tracks_creates(void);
+extern void test_neg_apply_invalid_index_returns_initial(void);
+extern void test_neg_get_state_invalid_index_returns_initial(void);
+extern void test_neg_get_pids_invalid_index_returns_null(void);
+extern void test_neg_register_handlers_before_init_returns_invalid_state(void);
+extern void test_neg_register_handlers_after_init_returns_ok(void);
+extern void test_neg_double_init_safe(void);
+
+/* -------------------------------------------------------------------------
  * test_dsp_catalog.c
  * ------------------------------------------------------------------------- */
 extern void test_catalog_dataset_id_is_nonempty(void);
@@ -611,6 +651,44 @@ int main(void)
     RUN_TEST(test_psk_get_key_content_correct);
     RUN_TEST(test_psk_get_null_after_deinit);
     RUN_TEST(test_psk_esp_platform_absent_in_host_build);
+
+    /* dsp_neg SM + slot table (DSP-402) */
+    RUN_TEST(test_neg_sm_requested_offer_goes_offered);
+    RUN_TEST(test_neg_sm_requested_agree_goes_agreed);
+    RUN_TEST(test_neg_sm_requested_terminate_goes_terminated);
+    RUN_TEST(test_neg_sm_requested_unhandled_stays);
+    RUN_TEST(test_neg_sm_offered_agree_goes_agreed);
+    RUN_TEST(test_neg_sm_offered_terminate_goes_terminated);
+    RUN_TEST(test_neg_sm_offered_unhandled_stays);
+    RUN_TEST(test_neg_sm_agreed_verify_goes_verified);
+    RUN_TEST(test_neg_sm_agreed_terminate_goes_terminated);
+    RUN_TEST(test_neg_sm_agreed_unhandled_stays);
+    RUN_TEST(test_neg_sm_verified_finalize_goes_finalized);
+    RUN_TEST(test_neg_sm_verified_terminate_goes_terminated);
+    RUN_TEST(test_neg_sm_verified_unhandled_stays);
+    RUN_TEST(test_neg_sm_finalized_absorbs_all_events);
+    RUN_TEST(test_neg_sm_terminated_absorbs_all_events);
+    RUN_TEST(test_neg_sm_full_happy_path);
+    RUN_TEST(test_neg_init_returns_ok);
+    RUN_TEST(test_neg_count_active_zero_after_init);
+    RUN_TEST(test_neg_create_null_cpid_returns_neg1);
+    RUN_TEST(test_neg_create_null_ppid_returns_neg1);
+    RUN_TEST(test_neg_create_returns_zero_first_slot);
+    RUN_TEST(test_neg_create_state_is_requested);
+    RUN_TEST(test_neg_apply_offer_event_gives_offered);
+    RUN_TEST(test_neg_get_consumer_pid_correct);
+    RUN_TEST(test_neg_get_provider_pid_correct);
+    RUN_TEST(test_neg_find_by_cpid_returns_correct_index);
+    RUN_TEST(test_neg_find_by_cpid_returns_neg1_if_not_found);
+    RUN_TEST(test_neg_find_by_cpid_null_returns_neg1);
+    RUN_TEST(test_neg_table_overflow_returns_neg1);
+    RUN_TEST(test_neg_count_active_tracks_creates);
+    RUN_TEST(test_neg_apply_invalid_index_returns_initial);
+    RUN_TEST(test_neg_get_state_invalid_index_returns_initial);
+    RUN_TEST(test_neg_get_pids_invalid_index_returns_null);
+    RUN_TEST(test_neg_register_handlers_before_init_returns_invalid_state);
+    RUN_TEST(test_neg_register_handlers_after_init_returns_ok);
+    RUN_TEST(test_neg_double_init_safe);
 
     /* dsp_catalog (DSP-401) */
     RUN_TEST(test_catalog_dataset_id_is_nonempty);
