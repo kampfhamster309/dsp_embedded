@@ -83,6 +83,8 @@ add_executable(dsp_test_runner
     test_smoke.c
     test_dsp_tls.c
     "${ROOT_DIR}/components/dsp_mbedtls/dsp_tls.c"
+    test_dsp_http.c
+    "${ROOT_DIR}/components/dsp_http/dsp_http.c"
 )
 
 target_link_libraries(dsp_test_runner PRIVATE

@@ -2,8 +2,8 @@
 
 ## Current State
 
-**Last completed ticket:** DSP-101 – Integrate mbedTLS with reduced config (TLS server context)
-**Next ticket:** DSP-102 – Implement HTTP server skeleton (esp_http_server)
+**Last completed ticket:** DSP-102 – Implement HTTP/1.1 server skeleton (dsp_http)
+**Next ticket:** DSP-103 – Add TLS session ticket support
 
 ## Project Structure
 
@@ -13,12 +13,14 @@ dsp_embedded/
 ├── main/CMakeLists.txt
 ├── components/
 │   ├── dsp_config/           # Feature flags: Kconfig + dsp_config.h
-│   └── dsp_mbedtls/         # TLS server context (DSP-101)
+│   ├── dsp_mbedtls/         # TLS server context (DSP-101)
+│   └── dsp_http/            # HTTP/1.1 server skeleton (DSP-102)
 ├── test/
 │   ├── CMakeLists.txt        # Host-native standalone CMake project
 │   ├── test_main.c           # Unity runner: UNITY_BEGIN/END + RUN_TEST calls
 │   ├── test_smoke.c          # 15 smoke tests (pipeline + dsp_config defaults)
 │   ├── test_dsp_tls.c        # 9 host-native tests for dsp_tls context (DSP-101)
+│   ├── test_dsp_http.c       # 15 host-native tests for dsp_http (DSP-102)
 │   ├── unity/                # git submodule: ThrowTheSwitch/Unity v2.6.0
 │   └── stubs/                # ESP-IDF header shims for host builds
 │       ├── esp_log.h         # ESP_LOG* → fprintf
@@ -56,6 +58,8 @@ dsp_embedded/
 - **Host build is in `test/`**, run with: `cd test && cmake -B build && cmake --build build && ctest --test-dir build`
 - `DSP_HOST_BUILD=1` is defined for host builds; `ESP_PLATFORM` is intentionally absent so `dsp_config.h` skips `sdkconfig.h`
 - `test/CMakeLists.txt` auto-discovers `components/*/include` — new component headers need no edits to the host build file; but component `.c` sources must be listed explicitly in `add_executable(dsp_test_runner ...)`
+- **dsp_http**: wraps `esp_http_server`; exposes `dsp_http_start(port)`, `dsp_http_stop()`, `dsp_http_register_handler(uri, method, fn)`, `dsp_http_is_running()`. Handler bridge uses `httpd_req_t::user_ctx` so a single `bridge_handler()` serves all routes. Server config: stack=4096, max_open_sockets=4, lru_purge_enable=true. Host `#else` stub preserves route table in static array (no real server) for test verification.
+- **dsp_http method mapping**: `DSP_HTTP_{GET,POST,PUT,DELETE}` are DSP-internal enum values (0–3); mapped to ESP-IDF `HTTP_GET=1, HTTP_POST=3, HTTP_PUT=4, HTTP_DELETE=0` via `map_method()` in the ESP_PLATFORM block.
 - **dsp_tls host stubs**: `dsp_tls.c` has an `#else` branch (no ESP_PLATFORM) providing `dsp_tls_server_init` (returns ESP_FAIL) and `dsp_tls_server_deinit`. `dsp_tls.h` requires `<stdbool.h>` and `<stddef.h>` (host-compatibility fixes applied in DSP-101).
 - `test/build/` is gitignored; `test/test_main.c` is tracked (replaced by Unity runner in DSP-004)
 - **Preprocessor string comparisons are invalid in `#if`**: `CONFIG_DSP_DAPS_GATEWAY_URL[0] == '\0'` caused a build error — string literals cannot be used in preprocessor expressions. Removed; Kconfig `depends on` handles the constraint instead.

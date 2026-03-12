@@ -28,6 +28,25 @@ extern void test_config_verbose_log_default(void);
 extern void test_config_daps_gateway_url_default(void);
 
 /* -------------------------------------------------------------------------
+ * test_dsp_http.c
+ * ------------------------------------------------------------------------- */
+extern void test_http_max_routes_in_range(void);
+extern void test_http_max_routes_default_value(void);
+extern void test_http_method_enum_values_distinct(void);
+extern void test_http_register_null_uri_returns_invalid_arg(void);
+extern void test_http_register_null_handler_returns_invalid_arg(void);
+extern void test_http_register_valid_handler_returns_ok(void);
+extern void test_http_register_post_handler_returns_ok(void);
+extern void test_http_register_all_methods(void);
+extern void test_http_is_running_false_before_start(void);
+extern void test_http_start_returns_fail_on_host(void);
+extern void test_http_is_running_false_after_failed_start(void);
+extern void test_http_stop_safe_when_not_running(void);
+extern void test_http_is_running_false_after_stop(void);
+extern void test_http_esp_platform_absent_in_host_build(void);
+extern void test_http_host_build_flag_set(void);
+
+/* -------------------------------------------------------------------------
  * test_dsp_tls.c
  * ------------------------------------------------------------------------- */
 extern void test_tls_ctx_sizeof_is_nonzero(void);
@@ -65,6 +84,23 @@ int main(void)
     RUN_TEST(test_config_http_port_default);
     RUN_TEST(test_config_verbose_log_default);
     RUN_TEST(test_config_daps_gateway_url_default);
+
+    /* dsp_http */
+    RUN_TEST(test_http_max_routes_in_range);
+    RUN_TEST(test_http_max_routes_default_value);
+    RUN_TEST(test_http_method_enum_values_distinct);
+    RUN_TEST(test_http_register_null_uri_returns_invalid_arg);
+    RUN_TEST(test_http_register_null_handler_returns_invalid_arg);
+    RUN_TEST(test_http_register_valid_handler_returns_ok);
+    RUN_TEST(test_http_register_post_handler_returns_ok);
+    RUN_TEST(test_http_register_all_methods);
+    RUN_TEST(test_http_is_running_false_before_start);
+    RUN_TEST(test_http_start_returns_fail_on_host);
+    RUN_TEST(test_http_is_running_false_after_failed_start);
+    RUN_TEST(test_http_stop_safe_when_not_running);
+    RUN_TEST(test_http_is_running_false_after_stop);
+    RUN_TEST(test_http_esp_platform_absent_in_host_build);
+    RUN_TEST(test_http_host_build_flag_set);
 
     /* dsp_tls */
     RUN_TEST(test_tls_ctx_sizeof_is_nonzero);
