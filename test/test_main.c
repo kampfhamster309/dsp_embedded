@@ -229,6 +229,41 @@ extern void test_psk_get_null_after_deinit(void);
 extern void test_psk_esp_platform_absent_in_host_build(void);
 
 /* -------------------------------------------------------------------------
+ * test_dsp_msg.c
+ * ------------------------------------------------------------------------- */
+extern void test_msg_error_codes_are_distinct(void);
+extern void test_msg_cat_req_null_returns_null_input(void);
+extern void test_msg_cat_req_bad_json_returns_parse_error(void);
+extern void test_msg_cat_req_missing_context_returns_error(void);
+extern void test_msg_cat_req_wrong_type_returns_error(void);
+extern void test_msg_cat_req_valid_returns_ok(void);
+extern void test_msg_cat_req_with_optional_filter_returns_ok(void);
+extern void test_msg_offer_null_returns_null_input(void);
+extern void test_msg_offer_bad_json_returns_parse_error(void);
+extern void test_msg_offer_missing_context_returns_error(void);
+extern void test_msg_offer_wrong_type_returns_error(void);
+extern void test_msg_offer_missing_process_id_returns_missing_field(void);
+extern void test_msg_offer_missing_offer_obj_returns_missing_field(void);
+extern void test_msg_offer_offer_field_is_string_returns_missing_field(void);
+extern void test_msg_offer_valid_returns_ok(void);
+extern void test_msg_agreement_null_returns_null_input(void);
+extern void test_msg_agreement_bad_json_returns_parse_error(void);
+extern void test_msg_agreement_missing_context_returns_error(void);
+extern void test_msg_agreement_wrong_type_returns_error(void);
+extern void test_msg_agreement_missing_process_id_returns_missing_field(void);
+extern void test_msg_agreement_missing_agreement_obj_returns_missing_field(void);
+extern void test_msg_agreement_agreement_field_is_string_returns_missing_field(void);
+extern void test_msg_agreement_valid_returns_ok(void);
+extern void test_msg_xfer_null_returns_null_input(void);
+extern void test_msg_xfer_bad_json_returns_parse_error(void);
+extern void test_msg_xfer_missing_context_returns_error(void);
+extern void test_msg_xfer_wrong_type_returns_error(void);
+extern void test_msg_xfer_missing_process_id_returns_missing_field(void);
+extern void test_msg_xfer_missing_dataset_returns_missing_field(void);
+extern void test_msg_xfer_valid_returns_ok(void);
+extern void test_msg_catalog_request_rejected_by_offer_validator(void);
+
+/* -------------------------------------------------------------------------
  * test_dsp_jsonld.c
  * ------------------------------------------------------------------------- */
 extern void test_jsonld_context_url_is_defined(void);
@@ -514,6 +549,39 @@ int main(void)
     RUN_TEST(test_psk_get_key_content_correct);
     RUN_TEST(test_psk_get_null_after_deinit);
     RUN_TEST(test_psk_esp_platform_absent_in_host_build);
+
+    /* dsp_msg validators (DSP-303) */
+    RUN_TEST(test_msg_error_codes_are_distinct);
+    RUN_TEST(test_msg_cat_req_null_returns_null_input);
+    RUN_TEST(test_msg_cat_req_bad_json_returns_parse_error);
+    RUN_TEST(test_msg_cat_req_missing_context_returns_error);
+    RUN_TEST(test_msg_cat_req_wrong_type_returns_error);
+    RUN_TEST(test_msg_cat_req_valid_returns_ok);
+    RUN_TEST(test_msg_cat_req_with_optional_filter_returns_ok);
+    RUN_TEST(test_msg_offer_null_returns_null_input);
+    RUN_TEST(test_msg_offer_bad_json_returns_parse_error);
+    RUN_TEST(test_msg_offer_missing_context_returns_error);
+    RUN_TEST(test_msg_offer_wrong_type_returns_error);
+    RUN_TEST(test_msg_offer_missing_process_id_returns_missing_field);
+    RUN_TEST(test_msg_offer_missing_offer_obj_returns_missing_field);
+    RUN_TEST(test_msg_offer_offer_field_is_string_returns_missing_field);
+    RUN_TEST(test_msg_offer_valid_returns_ok);
+    RUN_TEST(test_msg_agreement_null_returns_null_input);
+    RUN_TEST(test_msg_agreement_bad_json_returns_parse_error);
+    RUN_TEST(test_msg_agreement_missing_context_returns_error);
+    RUN_TEST(test_msg_agreement_wrong_type_returns_error);
+    RUN_TEST(test_msg_agreement_missing_process_id_returns_missing_field);
+    RUN_TEST(test_msg_agreement_missing_agreement_obj_returns_missing_field);
+    RUN_TEST(test_msg_agreement_agreement_field_is_string_returns_missing_field);
+    RUN_TEST(test_msg_agreement_valid_returns_ok);
+    RUN_TEST(test_msg_xfer_null_returns_null_input);
+    RUN_TEST(test_msg_xfer_bad_json_returns_parse_error);
+    RUN_TEST(test_msg_xfer_missing_context_returns_error);
+    RUN_TEST(test_msg_xfer_wrong_type_returns_error);
+    RUN_TEST(test_msg_xfer_missing_process_id_returns_missing_field);
+    RUN_TEST(test_msg_xfer_missing_dataset_returns_missing_field);
+    RUN_TEST(test_msg_xfer_valid_returns_ok);
+    RUN_TEST(test_msg_catalog_request_rejected_by_offer_validator);
 
     /* dsp_jsonld_ctx (DSP-302) */
     RUN_TEST(test_jsonld_context_url_is_defined);

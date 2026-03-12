@@ -102,6 +102,8 @@ add_executable(dsp_test_runner
     "${ROOT_DIR}/components/dsp_json/dsp_json.c"
     "${ROOT_DIR}/components/dsp_json/cjson/cJSON.c"
     test_dsp_jsonld.c
+    test_dsp_msg.c
+    "${ROOT_DIR}/components/dsp_msg/dsp_msg.c"
 )
 
 target_link_libraries(dsp_test_runner PRIVATE

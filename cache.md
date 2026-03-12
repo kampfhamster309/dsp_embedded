@@ -2,8 +2,8 @@
 
 ## Current State
 
-**Last completed ticket:** DSP-302 – Static JSON-LD context table (dsp_jsonld_ctx.h)
-**Next ticket:** DSP-303
+**Last completed ticket:** DSP-303 – DSP message schema validators (dsp_msg)
+**Next ticket:** DSP-304
 
 ## Project Structure
 
@@ -22,7 +22,8 @@ dsp_embedded/
 │   ├── dsp_psk/             # PSK credential management + TLS apply (DSP-204)
 │   ├── dsp_daps/            # DAPS shim stub: init/request_token API (DSP-205)
 │   ├── dsp_json/            # cJSON v1.7.19 wrapper + DSP JSON-LD field helpers (DSP-301)
-│   └── dsp_jsonld/          # Header-only: DSP JSON-LD context/type/field/state constants (DSP-302)
+│   ├── dsp_jsonld/          # Header-only: DSP JSON-LD context/type/field/state constants (DSP-302)
+│   └── dsp_msg/             # DSP message schema validators (DSP-303)
 ├── test/
 │   ├── CMakeLists.txt        # Host-native standalone CMake project
 │   ├── test_main.c           # Unity runner: UNITY_BEGIN/END + RUN_TEST calls
@@ -39,6 +40,7 @@ dsp_embedded/
 │   ├── test_dsp_daps.c      # 17 host-native tests for dsp_daps (DSP-205)
 │   ├── test_dsp_json.c      # 24 host-native tests for dsp_json (DSP-301)
 │   ├── test_dsp_jsonld.c    # 21 host-native tests for dsp_jsonld_ctx.h (DSP-302)
+│   ├── test_dsp_msg.c       # 31 host-native tests for dsp_msg validators (DSP-303)
 │   └── test_tickets_off_main.c # Unity runner for dsp_test_no_tickets binary
 │   ├── unity/                # git submodule: ThrowTheSwitch/Unity v2.6.0
 │   └── stubs/                # ESP-IDF header shims for host builds
@@ -97,6 +99,7 @@ dsp_embedded/
 - **dsp_jwt base64url decode**: RFC 4648 §5; no padding; processes 4-char groups → 3 bytes; trailing 2 chars → 1 byte, 3 chars → 2 bytes; 1 trailing char is invalid (-1). Returns decoded byte count or -1.
 - **dsp_daps**: `dsp_daps_init/deinit/is_initialized/request_token`. Error precedence: INVALID_ARG → NOT_INIT → DISABLED (CONFIG_DSP_ENABLE_DAPS_SHIM=0) → NO_URL (empty CONFIG_DSP_DAPS_GATEWAY_URL) → HTTP (stub). ESP_PLATFORM + shim enabled: HTTP path is a TODO stub returning ERR_HTTP. Host with default config always returns ERR_DISABLED. `dsp_daps.c` depends only on `dsp_config`; no mbedtls/http client yet.
 - **dsp_psk**: `dsp_psk_init/deinit/set/is_configured/get_identity/get_key`. Static buffers: `s_identity[64]`, `s_key[32]`. Constraints: identity 1–64 B, key 16–32 B (min 128-bit). `dsp_psk_apply(mbedtls_ssl_config *)` is ESP_PLATFORM-only; calls `mbedtls_ssl_conf_psk()` + restricts to PSK_WITH_AES_128_GCM_SHA256 / PSK_WITH_AES_256_GCM_SHA384. `deinit()` zero-wipes key material. 27 host-native tests.
+- **dsp_msg**: Validators: `dsp_msg_validate_catalog_request/offer/agreement/transfer_request`. Each checks: NULL → ERR_NULL_INPUT, parse fail → ERR_PARSE, missing @context → ERR_MISSING_CONTEXT, wrong @type → ERR_WRONG_TYPE, missing required field → ERR_MISSING_FIELD. offer requires `dspace:processId` (string) + `dspace:offer` (object); agreement requires `processId` + `dspace:agreement` (object); transfer_request requires `processId` + `dspace:dataset` (string). catalog_request needs only @context + @type. Depends on dsp_json + dsp_jsonld. 31 host-native tests.
 - **dsp_jsonld**: Header-only component (`dsp_jsonld_ctx.h`). Defines: `DSP_JSONLD_CONTEXT_URL`, namespace prefixes (`DSPACE/DCAT/ODRL/DCT`), JSON-LD field names (`@context/@type/@id`), DSP field names (`dspace:processId` etc.), catalog/negotiation/transfer/error message types, negotiation states (`REQUESTED`…`TERMINATED`), transfer states (`REQUESTED/STARTED/COMPLETED/TERMINATED/SUSPENDED`). DEV-001 deviation log updated with static-context rationale. 21 host-native tests. No `.c` source; no entry needed in test executable sources.
 - **dsp_json**: cJSON v1.7.19 vendored in `components/dsp_json/cjson/` (copied from ESP-IDF bundled copy). Always compiled; no ESP_PLATFORM split. Wrapper: `dsp_json_parse/delete`, `dsp_json_get_string/type/context`, `dsp_json_has_mandatory_fields`, `dsp_json_new_object`, `dsp_json_add_string`, `dsp_json_print` (static buf), `dsp_json_print_alloc/free_str`. Host build requires `"${COMPONENTS_DIR}/dsp_json/cjson"` added to `target_include_directories` in test/CMakeLists.txt (cjson/ is not under include/). 24 host-native tests.
 - Git default branch is `master` on this machine (not `main`).
