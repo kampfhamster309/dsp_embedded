@@ -530,6 +530,22 @@ extern void test_application_ring_buf_empty_after_stop_and_pop(void);
 extern void test_application_task_core_is_one(void);
 extern void test_application_task_stack_at_least_4096(void);
 
+/* dsp_ring_buf producer/consumer (DSP-504) */
+extern void test_drain_null_sh_returns_invalid_arg(void);
+extern void test_drain_null_buf_returns_invalid_arg(void);
+extern void test_drain_capacity_zero_is_noop(void);
+extern void test_drain_null_out_count_accepted(void);
+extern void test_drain_one_item(void);
+extern void test_drain_empty_returns_zero(void);
+extern void test_drain_partial_leaves_remainder(void);
+extern void test_drain_bounded_by_capacity_param(void);
+extern void test_drain_more_capacity_than_items(void);
+extern void test_drain_full_capacity_no_loss(void);
+extern void test_drain_after_overflow_retains_original_items(void);
+extern void test_drain_wrap_around(void);
+extern void test_producer_consumer_interleaved(void);
+extern void test_producer_consumer_bursty_producer(void);
+
 /* -------------------------------------------------------------------------
  * main
  * ------------------------------------------------------------------------- */
@@ -1032,6 +1048,22 @@ int main(void)
     RUN_TEST(test_application_ring_buf_empty_after_stop_and_pop);
     RUN_TEST(test_application_task_core_is_one);
     RUN_TEST(test_application_task_stack_at_least_4096);
+
+    /* dsp_ring_buf producer/consumer (DSP-504) */
+    RUN_TEST(test_drain_null_sh_returns_invalid_arg);
+    RUN_TEST(test_drain_null_buf_returns_invalid_arg);
+    RUN_TEST(test_drain_capacity_zero_is_noop);
+    RUN_TEST(test_drain_null_out_count_accepted);
+    RUN_TEST(test_drain_one_item);
+    RUN_TEST(test_drain_empty_returns_zero);
+    RUN_TEST(test_drain_partial_leaves_remainder);
+    RUN_TEST(test_drain_bounded_by_capacity_param);
+    RUN_TEST(test_drain_more_capacity_than_items);
+    RUN_TEST(test_drain_full_capacity_no_loss);
+    RUN_TEST(test_drain_after_overflow_retains_original_items);
+    RUN_TEST(test_drain_wrap_around);
+    RUN_TEST(test_producer_consumer_interleaved);
+    RUN_TEST(test_producer_consumer_bursty_producer);
 
     return UNITY_END();
 }

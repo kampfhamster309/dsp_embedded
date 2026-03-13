@@ -120,8 +120,8 @@ _Static_assert(offsetof(dsp_ring_buf_t, count)       == 520u, "count at offset 5
  * pass a pointer to both tasks via their pvParameters argument.
  *
  * Sizes of dsp_shared_t:
- *   ESP32-S3 (32-bit pointers): 528 + 4 + 4 + 4 + 4 = 544 bytes
- *   x86-64   (64-bit pointers): 528 + 8 + 8 + 4 + 4 = 552 bytes
+ *   ESP32-S3 (32-bit pointers): 528 + 4 + 4 + 4 + 4 + 4 = 548 bytes
+ *   x86-64   (64-bit pointers): 528 + 8 + 8 + 8 + 4 + 4 = 560 bytes
  *
  * The ring_buf field is always at offset 0 (verified below).
  */
@@ -134,6 +134,10 @@ typedef struct {
     SemaphoreHandle_t ring_buf_mutex; /**< Mutex; guards all ring_buf R/W access.   */
     QueueHandle_t     xfer_notify_q;  /**< Core 0 enqueues transfer-slot index here
                                            to notify Core 1 that a transfer started. */
+    QueueHandle_t     data_notify_q;  /**< Core 1 posts here after each successful
+                                           push so Core 0 can block instead of poll.
+                                           Depth=1; signals are coalesced (one send
+                                           covers multiple back-to-back pushes). */
     volatile uint32_t core0_ready;   /**< Set to 1 when protocol stack is up.       */
     volatile uint32_t core1_ready;   /**< Set to 1 when application task is running.*/
 } dsp_shared_t;
@@ -204,6 +208,32 @@ esp_err_t dsp_ring_buf_pop(dsp_shared_t *sh, dsp_sample_t *out);
  * @return Sample count, or 0 if sh is NULL.
  */
 uint32_t dsp_ring_buf_count(const dsp_shared_t *sh);
+
+/**
+ * @brief Drain up to @p capacity samples from the ring buffer (Core 0 side).
+ *
+ * Acquires ring_buf_mutex once and pops as many samples as are available up
+ * to @p capacity, storing them in @p buf.  More efficient than calling
+ * dsp_ring_buf_pop() in a loop because the mutex is held for the entire
+ * batch rather than once per sample.
+ *
+ * Typical usage in the protocol task:
+ *   dsp_sample_t batch[16];
+ *   uint32_t got = 0;
+ *   dsp_ring_buf_drain(&g_shared, batch, 16, &got);
+ *   for (uint32_t i = 0; i < got; i++) { ... process batch[i] ... }
+ *
+ * @param sh         Initialised shared state.
+ * @param buf        Caller-allocated array of at least @p capacity elements.
+ * @param capacity   Maximum number of samples to pop.  If 0, no-op.
+ * @param out_count  Set to the number of samples actually popped.  May be
+ *                   less than @p capacity if the buffer had fewer items.
+ *                   May be NULL if the count is not needed.
+ * @return ESP_OK on success (even if 0 samples were available).
+ *         ESP_ERR_INVALID_ARG if sh or buf is NULL (and capacity > 0).
+ */
+esp_err_t dsp_ring_buf_drain(dsp_shared_t *sh, dsp_sample_t *buf,
+                              uint32_t capacity, uint32_t *out_count);
 
 #ifdef __cplusplus
 }

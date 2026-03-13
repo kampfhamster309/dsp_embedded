@@ -117,6 +117,7 @@ add_executable(dsp_test_runner
     "${ROOT_DIR}/components/dsp_protocol/dsp_protocol.c"
     test_dsp_application.c
     "${ROOT_DIR}/components/dsp_application/dsp_application.c"
+    test_dsp_ring_buf.c
 )
 
 target_link_libraries(dsp_test_runner PRIVATE

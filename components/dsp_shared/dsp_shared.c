@@ -19,6 +19,11 @@
 /** Depth of the transfer notification queue (one slot per pending transfer). */
 #define XFER_NOTIFY_Q_DEPTH  4U
 
+/** Depth of the data-ready notification queue.
+ *  Depth=1: signals coalesce — multiple back-to-back pushes produce at most
+ *  one pending notification.  Core 0 drains all available samples on wake. */
+#define DATA_NOTIFY_Q_DEPTH  1U
+
 static inline void ring_lock(dsp_shared_t *sh)
 {
     xSemaphoreTake(sh->ring_buf_mutex, portMAX_DELAY);
@@ -59,6 +64,15 @@ esp_err_t dsp_shared_init(dsp_shared_t *sh)
         return ESP_ERR_NO_MEM;
     }
 
+    sh->data_notify_q = xQueueCreate(DATA_NOTIFY_Q_DEPTH, sizeof(uint32_t));
+    if (!sh->data_notify_q) {
+        vQueueDelete(sh->xfer_notify_q);
+        sh->xfer_notify_q = NULL;
+        vSemaphoreDelete(sh->ring_buf_mutex);
+        sh->ring_buf_mutex = NULL;
+        return ESP_ERR_NO_MEM;
+    }
+
     return ESP_OK;
 }
 
@@ -66,6 +80,10 @@ void dsp_shared_deinit(dsp_shared_t *sh)
 {
     if (!sh) {
         return;
+    }
+    if (sh->data_notify_q) {
+        vQueueDelete(sh->data_notify_q);
+        sh->data_notify_q = NULL;
     }
     if (sh->xfer_notify_q) {
         vQueueDelete(sh->xfer_notify_q);
@@ -128,6 +146,16 @@ esp_err_t dsp_ring_buf_push(dsp_shared_t *sh, const dsp_sample_t *sample)
     sh->ring_buf.count++;
 
     ring_unlock(sh);
+
+#ifdef ESP_PLATFORM
+    /* Notify Core 0 that data is available.  Non-blocking: if the queue is
+     * already full a pending notification exists, so nothing is lost. */
+    if (sh->data_notify_q) {
+        uint32_t dummy = 1u;
+        xQueueSend(sh->data_notify_q, &dummy, 0);
+    }
+#endif
+
     return ESP_OK;
 }
 
@@ -161,4 +189,36 @@ uint32_t dsp_ring_buf_count(const dsp_shared_t *sh)
     uint32_t n = sh->ring_buf.count;
     ring_unlock_const(sh);
     return n;
+}
+
+esp_err_t dsp_ring_buf_drain(dsp_shared_t *sh, dsp_sample_t *buf,
+                              uint32_t capacity, uint32_t *out_count)
+{
+    /* No-op path: capacity==0 needs no buffer and is always valid. */
+    if (capacity == 0u) {
+        if (out_count) {
+            *out_count = 0u;
+        }
+        return ESP_OK;
+    }
+
+    if (!sh || !buf) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    ring_lock(sh);
+
+    uint32_t n = sh->ring_buf.count < capacity ? sh->ring_buf.count : capacity;
+    for (uint32_t i = 0u; i < n; i++) {
+        buf[i] = sh->ring_buf.data[sh->ring_buf.tail];
+        sh->ring_buf.tail = (sh->ring_buf.tail + 1u) % DSP_RING_BUF_CAPACITY;
+        sh->ring_buf.count--;
+    }
+
+    ring_unlock(sh);
+
+    if (out_count) {
+        *out_count = n;
+    }
+    return ESP_OK;
 }
