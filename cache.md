@@ -2,8 +2,8 @@
 
 ## Current State
 
-**Last completed ticket:** DSP-604 – Power budget measurement (doc + human_to_do)
-**Next ticket:** DSP-701 (M7 – Integration test: catalog fetch)
+**Last completed ticket:** DSP-701 – Integration test: catalog fetch (14 tests, 1.86 s)
+**Next ticket:** DSP-702 (M7 – Integration test: negotiation flow)
 **M5 validation status:** All ACs confirmed on ESP32-S3 (2026-03-13)
 
 ## Project Structure
@@ -160,6 +160,15 @@ dsp_embedded/
 - **TWDT timeout window observed**: TWDT fires at ~5000 ms (`task_wdt` log at `I(8786)` = 5 s after hang message at `I(3787)`). Ring buffer fills in ~3.2 s at 100 ms / 4 channels; normal acquisition feeds WDT each 100 ms so TWDT never fires in normal operation.
 - **`esp_task_wdt.h` component location gotcha**: `esp_task_wdt` is NOT a standalone ESP-IDF component name. The header lives in `esp_system`. Use `REQUIRES ... esp_system` not `esp_task_wdt` — the latter causes `Failed to resolve component 'esp_task_wdt'` at cmake time.
 - **DSP-604 power measurement**: `doc/power_measurement.md` has full procedure + expected ranges. Physical measurements pending (requires ammeter; added to `human_to_do.md`). Datasheet figures: Active WiFi 105–130 mA avg; light-sleep 20–45 mA avg (DTIM-dependent); deep-sleep 7–15 µA (RTC fast+slow on).
+
+### M7 / Integration Testing (DSP-701–)
+
+- **Integration test layout**: `integration/` dir with `conftest.py` (fixtures), `test_701_catalog.py`, `requirements.txt`, `pytest.ini`. Run with: `integration/.venv/bin/pytest integration/ --provider-url http://<device-ip> --counterpart-url http://localhost:18000 -v`
+- **Provider URL**: Device IP 192.168.178.107 (may change on DHCP reassignment). Check with boot log or router DHCP table. Env var: `PROVIDER_DSP_URL`.
+- **DSP counterpart**: `cd docker && docker compose up -d`. Healthy at `http://localhost:18000/health`. Control API at `/api/test/*`.
+- **WiFi provisioning fix (main.c)**: `dsp_wifi_store_credentials()` requires NVS to be initialized first (done by `dsp_wifi_init()`). When `CONFIG_DSP_WIFI_PROVISION=y`, pass credentials directly via `dsp_wifi_config_t` to `dsp_wifi_init()`, then call `store_credentials()` after init to persist for subsequent boots. The old ordering (store before init) produced `0x1101` (NVS_NOT_INITIALIZED) and credentials were never written.
+- **Integration venv**: `python3 -m venv integration/.venv && integration/.venv/bin/pip install pytest httpx`. Venv is gitignored.
+- **DSP-701 result (2026-03-14)**: 14 tests passed in 1.86 s against device at 192.168.178.107. Both direct and counterpart-proxied `GET /catalog` validated `@type=dcat:Catalog`, `@context`, `dcat:dataset`, `dct:title`, and `@id` fields.
 
 ### ESP32-S3 Board / Serial Capture
 

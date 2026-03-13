@@ -172,7 +172,7 @@ Agent rules (AGENTS.md) apply throughout: git commit after every ticket, create 
 
 | Ticket | Title | Description |
 |--------|-------|-------------|
-| DSP-701 | Integration test: catalog fetch | Write an integration test that starts the EDC Docker container, queries `GET /catalog` on the DSP Embedded node (running on host build), and validates the response. |
+| ✅ DSP-701 | Integration test: catalog fetch | Write an integration test that starts the EDC Docker container, queries `GET /catalog` on the DSP Embedded node (running on host build), and validates the response. |
 | DSP-702 | Integration test: negotiation flow | Integration test covering the full offer → agree sequence against the EDC connector. |
 | DSP-703 | Integration test: transfer flow | Integration test covering transfer start → status → completion against the EDC connector. |
 | DSP-704 | Fill compatibility matrix | Run integration tests against each supported EDC version. Document results in `doc/compatibility_matrix.md`. |

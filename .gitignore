@@ -41,3 +41,6 @@ docker/certs/*.crt
 components/dsp_identity/certs/*.der
 cache.md
 sdkconfig.wifi
+
+# Integration test venv
+integration/.venv/

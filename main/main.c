@@ -107,25 +107,39 @@ void app_main(void)
     s_wifi_eg = xEventGroupCreate();
     dsp_wifi_set_event_cb(wifi_event_cb, s_wifi_eg);
 
+    /* When provisioning is enabled, pass credentials directly to init so
+     * NVS does not need to be pre-populated. After a successful init the
+     * credentials are written to NVS for subsequent cold boots. */
 #if CONFIG_DSP_WIFI_PROVISION
     {
-        esp_err_t prov_err = dsp_wifi_store_credentials(
-            CONFIG_DSP_WIFI_PROVISION_SSID,
-            CONFIG_DSP_WIFI_PROVISION_PASSWORD);
-        if (prov_err == ESP_OK) {
-            ESP_LOGI(TAG, "WiFi credentials stored (SSID: %s)",
-                     CONFIG_DSP_WIFI_PROVISION_SSID);
-        } else {
-            ESP_LOGE(TAG, "Failed to store WiFi credentials: 0x%x", prov_err);
-        }
+        dsp_wifi_config_t provision_cfg = {0};
+        strncpy(provision_cfg.ssid, CONFIG_DSP_WIFI_PROVISION_SSID,
+                sizeof(provision_cfg.ssid) - 1);
+        strncpy(provision_cfg.password, CONFIG_DSP_WIFI_PROVISION_PASSWORD,
+                sizeof(provision_cfg.password) - 1);
+        err = dsp_wifi_init(&provision_cfg);
     }
-#endif
-
+#else
     err = dsp_wifi_init(NULL);
+#endif
     if (err != ESP_OK) {
-        ESP_LOGW(TAG, "WiFi init failed (0x%x) – continuing for M5 AC validation",
+        ESP_LOGW(TAG, "WiFi init failed (0x%x) – continuing without WiFi",
                  err);
     } else {
+#if CONFIG_DSP_WIFI_PROVISION
+        /* Persist credentials so subsequent boots work without the flag. */
+        {
+            esp_err_t prov_err = dsp_wifi_store_credentials(
+                CONFIG_DSP_WIFI_PROVISION_SSID,
+                CONFIG_DSP_WIFI_PROVISION_PASSWORD);
+            if (prov_err == ESP_OK) {
+                ESP_LOGI(TAG, "WiFi credentials stored (SSID: %s)",
+                         CONFIG_DSP_WIFI_PROVISION_SSID);
+            } else {
+                ESP_LOGW(TAG, "WiFi credentials persist failed: 0x%x", prov_err);
+            }
+        }
+#endif
         dsp_wifi_connect();
 
         EventBits_t bits = xEventGroupWaitBits(s_wifi_eg, WIFI_CONNECTED_BIT,
