@@ -40,3 +40,4 @@ docker/certs/*.crt
 # the key without regenerating the cert would break the pair).
 components/dsp_identity/certs/*.der
 cache.md
+sdkconfig.wifi

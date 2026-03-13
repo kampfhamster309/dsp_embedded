@@ -1,0 +1,33 @@
+menu "DSP Embedded – One-shot WiFi Provisioning"
+
+    config DSP_WIFI_PROVISION
+        bool "Write WiFi credentials to NVS on next boot"
+        default n
+        help
+            When enabled, app_main() calls dsp_wifi_store_credentials() with
+            the SSID and password below, writes them to NVS, then continues
+            to connect normally.  Disable this option after the first
+            successful boot to avoid re-writing NVS on every reset.
+
+            Build with:
+              idf.py -DSDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.wifi"
+            where sdkconfig.wifi contains:
+              CONFIG_DSP_WIFI_PROVISION=y
+              CONFIG_DSP_WIFI_PROVISION_SSID="YourSSID"
+              CONFIG_DSP_WIFI_PROVISION_PASSWORD="YourPassword"
+
+    config DSP_WIFI_PROVISION_SSID
+        string "WiFi SSID"
+        default ""
+        depends on DSP_WIFI_PROVISION
+        help
+            Network SSID to write to NVS.
+
+    config DSP_WIFI_PROVISION_PASSWORD
+        string "WiFi password"
+        default ""
+        depends on DSP_WIFI_PROVISION
+        help
+            WPA2 passphrase to write to NVS.
+
+endmenu

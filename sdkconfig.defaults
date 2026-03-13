@@ -151,3 +151,11 @@ CONFIG_ESP_TASK_WDT_TIMEOUT_S=30
 
 # DSP feature flags
 CONFIG_DSP_ENABLE_PSK=y
+
+# WiFi one-shot provisioning – disabled by default
+# To provision, create sdkconfig.wifi (gitignored) with:
+#   CONFIG_DSP_WIFI_PROVISION=y
+#   CONFIG_DSP_WIFI_PROVISION_SSID="YourSSID"
+#   CONFIG_DSP_WIFI_PROVISION_PASSWORD="YourPassword"
+# Then build with: idf.py -DSDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.wifi" build flash
+CONFIG_DSP_WIFI_PROVISION=n
