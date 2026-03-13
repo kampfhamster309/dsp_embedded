@@ -2,8 +2,8 @@
 
 ## Current State
 
-**Last completed ticket:** DSP-602 – Wake-up and state restoration (`dsp_power_handle_wakeup`)
-**Next ticket:** DSP-603 (M6 – Watchdog-secured power-save mode)
+**Last completed ticket:** DSP-603 – Watchdog-secured power-save mode
+**Next ticket:** DSP-604 (M6 – Power budget measurement, hardware + ammeter required)
 **M5 validation status:** All ACs confirmed on ESP32-S3 (2026-03-13)
 
 ## Project Structure
@@ -153,7 +153,12 @@ dsp_embedded/
 - **`dsp_http_start()` host stub always returns `ESP_FAIL`** — never sets `is_running=true`. Do not assert `is_running()` is true after calling `dsp_http_start()` on host. Only assert it's false after `enter_deep_sleep` (stop was called).
 - **`dsp_wifi_connect()` host stub**: returns `ESP_FAIL` unconditionally, no state check, safe to call without prior `dsp_wifi_init()`. `dsp_power_handle_wakeup()` treats a FAIL from `dsp_wifi_connect()` as a warning (non-fatal).
 - **`dsp_test_deep_sleep_on` binary**: compiled with `-DCONFIG_DSP_DEEP_SLEEP_BETWEEN_TX=1`. Sources: `dsp_power.c`, `dsp_rtc_state.c`, `dsp_neg.c`, `dsp_xfer.c`, `dsp_http.c`, `dsp_json.c`, `cjson/cJSON.c`, `dsp_wifi.c`. Needs `dsp_json/cjson` in `target_include_directories` because `dsp_xfer.c` → `dsp_json.h` → `cJSON.h`.
-- **ESP-IDF CMakeLists for dsp_power**: `REQUIRES dsp_config dsp_rtc_state dsp_http dsp_wifi esp_hw_support`. `esp_deep_sleep_start()` is in `esp_hw_support`.
+- **ESP-IDF CMakeLists for dsp_power**: `REQUIRES dsp_config dsp_rtc_state dsp_http dsp_wifi esp_hw_support esp_pm esp_system`. `esp_deep_sleep_start()` is in `esp_hw_support`. `esp_task_wdt.h` is in `esp_system` (not a separate component). `esp_pm_configure()` is in `esp_pm`.
+- **`dsp_power_pm_init()` (DSP-603)**: Always compiled on `ESP_PLATFORM` (NOT behind deep-sleep flag). Call from `app_main` before starting tasks. (1) `esp_task_wdt_reconfigure(&wdt_cfg)` with `timeout_ms=CONFIG_DSP_WATCHDOG_TIMEOUT_MS, trigger_panic=true`; falls back to `esp_task_wdt_init()` if `ESP_ERR_INVALID_STATE`. (2) Optionally `esp_pm_configure()` if `CONFIG_DSP_POWER_SAVE_LIGHT_SLEEP=1`.
+- **`esp_task_wdt` subscription in `dsp_application.c`**: `esp_task_wdt_add(NULL)` in `application_init()` (inside the task). `esp_task_wdt_reset()` called once per acquisition loop iteration. `esp_task_wdt_delete(s_task_handle)` in `dsp_application_stop()` before `vTaskDelete()`. All within `#ifdef ESP_PLATFORM`. `esp_task_wdt.h` header lives in `esp_system` component.
+- **`CONFIG_DSP_TEST_WATCHDOG_HANG` (device test flag)**: Build with `sdkconfig.hang_test` containing `CONFIG_DSP_TEST_WATCHDOG_HANG=y`. After first sample, acquisition task logs "DSP-603 hang test: blocking..." and enters `for(;;)` without feeding WDT. TWDT fires at ~5000ms with `E (task_wdt) Task watchdog got triggered... - dsp_application (CPU 1)`. Default=0; never enable in production.
+- **TWDT timeout window observed**: TWDT fires at ~5000 ms (`task_wdt` log at `I(8786)` = 5 s after hang message at `I(3787)`). Ring buffer fills in ~3.2 s at 100 ms / 4 channels; normal acquisition feeds WDT each 100 ms so TWDT never fires in normal operation.
+- **`esp_task_wdt.h` component location gotcha**: `esp_task_wdt` is NOT a standalone ESP-IDF component name. The header lives in `esp_system`. Use `REQUIRES ... esp_system` not `esp_task_wdt` — the latter causes `Failed to resolve component 'esp_task_wdt'` at cmake time.
 
 ### ESP32-S3 Board / Serial Capture
 

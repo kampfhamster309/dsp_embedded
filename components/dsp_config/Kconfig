@@ -90,6 +90,38 @@ menu "DSP Embedded Configuration"
             Adds minimal overhead but is not required for basic provider
             operation.
 
+    config DSP_WATCHDOG_TIMEOUT_MS
+        int "Task watchdog timeout for the acquisition loop (milliseconds)"
+        default 5000
+        range 1000 30000
+        help
+            Timeout in milliseconds for the task watchdog that guards the
+            Core 1 acquisition loop. If the application task does not
+            call esp_task_wdt_reset() within this window the TWDT triggers
+            a system panic. Must be larger than DSP_APPLICATION_POLL_INTERVAL_MS.
+            Default of 5000 ms gives 50× headroom over the 100 ms poll interval.
+
+    config DSP_POWER_SAVE_LIGHT_SLEEP
+        bool "Enable automatic light sleep between acquisition cycles"
+        default n
+        help
+            Configures esp_pm to allow the CPU to enter light sleep
+            automatically during FreeRTOS idle periods between acquisition
+            cycles. Reduces active-WiFi current from ~120 mA to ~20–40 mA
+            with minimal impact on HTTP server response latency.
+            Requires CONFIG_PM_ENABLE=y and CONFIG_FREERTOS_USE_TICKLESS_IDLE=y
+            in sdkconfig.
+
+    config DSP_TEST_WATCHDOG_HANG
+        bool "Intentional watchdog hang (device test — DO NOT enable in production)"
+        default n
+        help
+            Causes the acquisition task to busy-wait after its first sample
+            without feeding the watchdog. The TWDT will fire within
+            DSP_WATCHDOG_TIMEOUT_MS milliseconds and trigger a panic/reset.
+            Use this flag to verify that the watchdog fires correctly on the
+            device (DSP-603 AC). NEVER enable in production.
+
     config DSP_APPLICATION_POLL_INTERVAL_MS
         int "Sensor acquisition poll interval (milliseconds)"
         default 100

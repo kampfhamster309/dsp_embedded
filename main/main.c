@@ -26,6 +26,7 @@
 #include "esp_log.h"
 #include "dsp_config.h"
 #include "dsp_mem.h"
+#include "dsp_power.h"
 #include "dsp_wifi.h"
 #include "dsp_shared.h"
 #include "dsp_protocol.h"
@@ -136,6 +137,12 @@ void app_main(void)
     }
 
     dsp_mem_report("after-wifi");
+
+    /* ------------------------------------------------------------------ */
+    /* Power management (DSP-603)                                          */
+    /* Configure TWDT and optional light sleep before spawning tasks.     */
+    /* ------------------------------------------------------------------ */
+    dsp_power_pm_init();
 
     /* ------------------------------------------------------------------ */
     /* Core 0 – protocol stack                                             */

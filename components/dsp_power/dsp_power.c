@@ -7,14 +7,69 @@
  */
 
 #include "dsp_power.h"
+#include "dsp_config.h"
+#include "esp_log.h"
+
+/* TAG is needed on ESP (for pm_init) and on host when deep-sleep is on. */
+#if defined(ESP_PLATFORM) || CONFIG_DSP_DEEP_SLEEP_BETWEEN_TX
+static const char *TAG = "dsp_power";
+#endif
+
+/* =========================================================================
+ * dsp_power_pm_init – DSP-603
+ * ========================================================================= */
+#ifdef ESP_PLATFORM
+#include "esp_task_wdt.h"
+#include "esp_pm.h"
+
+esp_err_t dsp_power_pm_init(void)
+{
+    /* --- Task Watchdog -------------------------------------------------- */
+    esp_task_wdt_config_t wdt_cfg = {
+        .timeout_ms    = CONFIG_DSP_WATCHDOG_TIMEOUT_MS,
+        .idle_core_mask = 0,        /* don't watch idle tasks */
+        .trigger_panic = true,
+    };
+
+    /* Prefer reconfigure (TWDT already running by default in ESP-IDF).
+     * Fall back to init if somehow not yet running. */
+    esp_err_t err = esp_task_wdt_reconfigure(&wdt_cfg);
+    if (err == ESP_ERR_INVALID_STATE) {
+        err = esp_task_wdt_init(&wdt_cfg);
+    }
+    if (err != ESP_OK) {
+        ESP_LOGW(TAG, "TWDT configure failed (0x%x) – watchdog may use "
+                      "default sdkconfig timeout", err);
+    } else {
+        ESP_LOGI(TAG, "TWDT configured: timeout=%u ms, panic=true",
+                 (unsigned)CONFIG_DSP_WATCHDOG_TIMEOUT_MS);
+    }
+
+    /* --- Light sleep (optional) ---------------------------------------- */
+#if CONFIG_DSP_POWER_SAVE_LIGHT_SLEEP
+    esp_pm_config_t pm_cfg = {
+        .max_freq_mhz       = 240,
+        .min_freq_mhz       = 80,
+        .light_sleep_enable = true,
+    };
+    err = esp_pm_configure(&pm_cfg);
+    if (err != ESP_OK) {
+        ESP_LOGW(TAG, "esp_pm_configure failed (0x%x) – light sleep "
+                      "not active", err);
+    } else {
+        ESP_LOGI(TAG, "light sleep enabled (max 240 MHz, min 80 MHz)");
+    }
+#endif /* CONFIG_DSP_POWER_SAVE_LIGHT_SLEEP */
+
+    return ESP_OK;
+}
+#endif /* ESP_PLATFORM */
 
 #if CONFIG_DSP_DEEP_SLEEP_BETWEEN_TX
 
-#include "esp_log.h"
 #include "dsp_rtc_state.h"
 #include "dsp_http.h"
 #include "dsp_wifi.h"
-#include "dsp_config.h"
 
 #ifdef ESP_PLATFORM
 #include "esp_sleep.h"
@@ -24,8 +79,6 @@ static dsp_power_sleep_fn_t     s_sleep_fn     = NULL;
 static void                    *s_sleep_arg    = NULL;
 static dsp_power_wakeup_cause_t s_wakeup_cause = DSP_POWER_WAKEUP_UNDEFINED;
 #endif
-
-static const char *TAG = "dsp_power";
 
 /* -------------------------------------------------------------------------
  * Internal helpers

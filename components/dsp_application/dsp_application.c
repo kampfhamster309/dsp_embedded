@@ -13,6 +13,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_timer.h"
+#include "esp_task_wdt.h"
 #endif
 
 static const char *TAG = "dsp_application";
@@ -76,6 +77,18 @@ static void application_init(dsp_shared_t *sh)
 #ifdef ESP_PLATFORM
     ESP_LOGI(TAG, "application task running on core %d (expected %d)",
              (int)xTaskGetCoreID(NULL), DSP_APPLICATION_TASK_CORE);
+
+    /* Subscribe this task to the Task Watchdog Timer.  The task must call
+     * esp_task_wdt_reset() at least once per CONFIG_DSP_WATCHDOG_TIMEOUT_MS
+     * milliseconds or the TWDT triggers a panic (DSP-603). */
+    esp_err_t wdt_err = esp_task_wdt_add(NULL);
+    if (wdt_err != ESP_OK) {
+        ESP_LOGW(TAG, "esp_task_wdt_add failed (0x%x) – task not watched",
+                 wdt_err);
+    } else {
+        ESP_LOGI(TAG, "subscribed to TWDT (timeout %d ms)",
+                 CONFIG_DSP_WATCHDOG_TIMEOUT_MS);
+    }
 #endif
 
     sh->core1_ready = 1;
@@ -99,6 +112,19 @@ static void application_task(void *arg)
     for (;;) {
         acquire_one_sample(channel);
         channel = (uint8_t)((channel + 1u) % DSP_SAMPLE_CHANNEL_MAX);
+
+        /* Feed the task watchdog once per acquisition cycle. */
+        esp_task_wdt_reset();
+
+#if CONFIG_DSP_TEST_WATCHDOG_HANG
+        /* DEVICE TEST ONLY: busy-wait without feeding the WDT to verify
+         * that the TWDT fires within CONFIG_DSP_WATCHDOG_TIMEOUT_MS ms. */
+        ESP_LOGI(TAG, "DSP-603 hang test: blocking acquisition loop "
+                      "to trigger TWDT (timeout %d ms) ...",
+                 CONFIG_DSP_WATCHDOG_TIMEOUT_MS);
+        for (;;) { /* intentional infinite busy-wait – TWDT will fire */ }
+#endif
+
         vTaskDelay(pdMS_TO_TICKS(CONFIG_DSP_APPLICATION_POLL_INTERVAL_MS));
     }
 }
@@ -151,6 +177,8 @@ void dsp_application_stop(void)
 
 #ifdef ESP_PLATFORM
     if (s_task_handle) {
+        /* Unsubscribe from TWDT before deleting the task. */
+        esp_task_wdt_delete(s_task_handle);
         vTaskDelete(s_task_handle);
         s_task_handle = NULL;
     }

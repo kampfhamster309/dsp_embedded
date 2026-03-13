@@ -124,15 +124,42 @@
 #endif
 
 /**
- * CONFIG_DSP_DEEP_SLEEP_BETWEEN_TX
+ * CONFIG_DSP_WATCHDOG_TIMEOUT_MS
  *
- * Enables deep-sleep power management between data transfers.
- * State is preserved in RTC memory.  Average idle current drops from
- * ~120 mA (WiFi active) to ~20 µA (deep sleep).
+ * Timeout in milliseconds for the task watchdog that guards the Core 1
+ * acquisition loop. If the application task does not call
+ * esp_task_wdt_reset() within this window the TWDT triggers a panic.
+ * Must be greater than CONFIG_DSP_APPLICATION_POLL_INTERVAL_MS.
+ * Default: 5000 ms.
+ */
+#ifndef CONFIG_DSP_WATCHDOG_TIMEOUT_MS
+#define CONFIG_DSP_WATCHDOG_TIMEOUT_MS 5000
+#endif
+
+/**
+ * CONFIG_DSP_POWER_SAVE_LIGHT_SLEEP
+ *
+ * Enables automatic CPU light-sleep via esp_pm between FreeRTOS idle ticks.
+ * Reduces active-WiFi current from ~120 mA to ~20–40 mA with minimal
+ * latency impact on the HTTP server.
  * Default: disabled.
  */
-#ifndef CONFIG_DSP_DEEP_SLEEP_BETWEEN_TX
-#define CONFIG_DSP_DEEP_SLEEP_BETWEEN_TX 0
+#ifndef CONFIG_DSP_POWER_SAVE_LIGHT_SLEEP
+#define CONFIG_DSP_POWER_SAVE_LIGHT_SLEEP 0
+#endif
+
+/**
+ * CONFIG_DSP_TEST_WATCHDOG_HANG
+ *
+ * DEVICE TEST ONLY – DO NOT ENABLE IN PRODUCTION.
+ * Causes the acquisition task to busy-wait after its first sample without
+ * feeding the watchdog, triggering a TWDT panic within
+ * CONFIG_DSP_WATCHDOG_TIMEOUT_MS milliseconds.
+ * Used to verify that the watchdog fires within the expected window.
+ * Default: disabled.
+ */
+#ifndef CONFIG_DSP_TEST_WATCHDOG_HANG
+#define CONFIG_DSP_TEST_WATCHDOG_HANG 0
 #endif
 
 /* -------------------------------------------------------------------------

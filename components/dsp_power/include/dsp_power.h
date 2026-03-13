@@ -32,6 +32,28 @@
 extern "C" {
 #endif
 
+/* -------------------------------------------------------------------------
+ * Power-save mode (DSP-603) – always available on ESP, no-op on host
+ * ------------------------------------------------------------------------- */
+
+#ifdef ESP_PLATFORM
+/**
+ * @brief Configure the task watchdog and (optionally) esp_pm light sleep.
+ *
+ * Call once from app_main before starting the application task:
+ *   - Reconfigures the ESP Task Watchdog Timer (TWDT) with the timeout from
+ *     CONFIG_DSP_WATCHDOG_TIMEOUT_MS and trigger_panic = true.
+ *   - If CONFIG_DSP_POWER_SAVE_LIGHT_SLEEP is enabled, calls esp_pm_configure()
+ *     to allow the CPU to light-sleep during FreeRTOS idle periods.
+ *
+ * The function is a no-op on the host build (not declared there).
+ *
+ * @return ESP_OK on success; non-OK if TWDT or PM configuration fails
+ *         (the firmware continues; failures are logged as warnings).
+ */
+esp_err_t dsp_power_pm_init(void);
+#endif /* ESP_PLATFORM */
+
 #if CONFIG_DSP_DEEP_SLEEP_BETWEEN_TX
 
 /* -------------------------------------------------------------------------
