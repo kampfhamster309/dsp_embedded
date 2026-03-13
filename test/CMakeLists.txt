@@ -118,6 +118,8 @@ add_executable(dsp_test_runner
     test_dsp_application.c
     "${ROOT_DIR}/components/dsp_application/dsp_application.c"
     test_dsp_ring_buf.c
+    test_dsp_rtc_state.c
+    "${ROOT_DIR}/components/dsp_rtc_state/dsp_rtc_state.c"
 )
 
 target_link_libraries(dsp_test_runner PRIVATE

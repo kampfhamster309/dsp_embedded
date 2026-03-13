@@ -167,6 +167,25 @@ int dsp_neg_count_active(void);
  */
 bool dsp_neg_is_active(int idx);
 
+/**
+ * Directly load a negotiation slot at index @p idx with the given state and
+ * process IDs, bypassing the state machine.
+ *
+ * Used exclusively by dsp_rtc_state_restore() to reconstruct the slot table
+ * after a deep-sleep wake-up without replaying state-machine events.
+ * Must be called after dsp_neg_init() on an empty slot.
+ *
+ * @param idx           Slot index [0, DSP_NEG_MAX).
+ * @param state         State to set directly.
+ * @param consumer_pid  NUL-terminated consumer PID (copied; max DSP_NEG_PID_LEN-1).
+ * @param provider_pid  NUL-terminated provider PID (copied; max DSP_NEG_PID_LEN-1).
+ * @return ESP_OK on success.
+ *         ESP_ERR_INVALID_ARG if idx out of range or either PID is NULL.
+ *         ESP_ERR_INVALID_STATE if dsp_neg_init() has not been called.
+ */
+esp_err_t dsp_neg_load_slot(int idx, dsp_neg_state_t state,
+                              const char *consumer_pid, const char *provider_pid);
+
 /* -------------------------------------------------------------------------
  * HTTP handler registration
  * ------------------------------------------------------------------------- */

@@ -133,7 +133,7 @@ Agent rules (AGENTS.md) apply throughout: git commit after every ticket, create 
 | ✅ DSP-502 | Core 0 task setup | Pin `dsp_protocol_task` to Core 0. Initialize HTTP server, DSP state machines, and JWT validator within this task. Set stack size to fit memory budget. |
 | ✅ DSP-503 | Core 1 task setup | Pin `dsp_application_task` to Core 1. Implement stub sensor polling loop and ADC read. Write data into ring buffer. Set stack size. |
 | ✅ DSP-504 | Ring buffer producer/consumer | Implement lock-free ring buffer (or FreeRTOS stream buffer) between Core 1 (producer) and Core 0 (consumer for transfers). Unit-test on host. |
-| DSP-505 | RTC memory persistence | Implement `dsp_rtc_state` module: serialize/deserialize negotiation and transfer state to/from RTC memory. Unit-test save/restore round-trip. |
+| ✅ DSP-505 | RTC memory persistence | Implement `dsp_rtc_state` module: serialize/deserialize negotiation and transfer state to/from RTC memory. Unit-test save/restore round-trip. |
 
 **Acceptance Criteria:**
 

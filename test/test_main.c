@@ -546,6 +546,31 @@ extern void test_drain_wrap_around(void);
 extern void test_producer_consumer_interleaved(void);
 extern void test_producer_consumer_bursty_producer(void);
 
+/* dsp_rtc_state (DSP-505) */
+extern void test_rtc_neg_slot_size(void);
+extern void test_rtc_xfer_slot_size(void);
+extern void test_rtc_not_valid_after_clear(void);
+extern void test_rtc_valid_after_save(void);
+extern void test_rtc_not_valid_after_save_then_clear(void);
+extern void test_rtc_restore_without_save_returns_invalid_state(void);
+extern void test_rtc_empty_table_round_trip(void);
+extern void test_rtc_single_neg_slot_round_trip(void);
+extern void test_rtc_neg_slot_verified_state_preserved(void);
+extern void test_rtc_neg_slot_terminated_state_preserved(void);
+extern void test_rtc_single_xfer_slot_round_trip(void);
+extern void test_rtc_xfer_completed_state_preserved(void);
+extern void test_rtc_full_neg_table_round_trip(void);
+extern void test_rtc_full_xfer_table_round_trip(void);
+extern void test_rtc_mixed_neg_and_xfer_round_trip(void);
+extern void test_rtc_second_save_overwrites_first(void);
+extern void test_neg_load_slot_null_cpid_returns_invalid_arg(void);
+extern void test_neg_load_slot_null_ppid_returns_invalid_arg(void);
+extern void test_neg_load_slot_bad_idx_returns_invalid_arg(void);
+extern void test_neg_load_slot_not_initialized_returns_invalid_state(void);
+extern void test_xfer_load_slot_null_pid_returns_invalid_arg(void);
+extern void test_xfer_load_slot_bad_idx_returns_invalid_arg(void);
+extern void test_xfer_load_slot_not_initialized_returns_invalid_state(void);
+
 /* -------------------------------------------------------------------------
  * main
  * ------------------------------------------------------------------------- */
@@ -1064,6 +1089,31 @@ int main(void)
     RUN_TEST(test_drain_wrap_around);
     RUN_TEST(test_producer_consumer_interleaved);
     RUN_TEST(test_producer_consumer_bursty_producer);
+
+    /* dsp_rtc_state – RTC memory persistence (DSP-505) */
+    RUN_TEST(test_rtc_neg_slot_size);
+    RUN_TEST(test_rtc_xfer_slot_size);
+    RUN_TEST(test_rtc_not_valid_after_clear);
+    RUN_TEST(test_rtc_valid_after_save);
+    RUN_TEST(test_rtc_not_valid_after_save_then_clear);
+    RUN_TEST(test_rtc_restore_without_save_returns_invalid_state);
+    RUN_TEST(test_rtc_empty_table_round_trip);
+    RUN_TEST(test_rtc_single_neg_slot_round_trip);
+    RUN_TEST(test_rtc_neg_slot_verified_state_preserved);
+    RUN_TEST(test_rtc_neg_slot_terminated_state_preserved);
+    RUN_TEST(test_rtc_single_xfer_slot_round_trip);
+    RUN_TEST(test_rtc_xfer_completed_state_preserved);
+    RUN_TEST(test_rtc_full_neg_table_round_trip);
+    RUN_TEST(test_rtc_full_xfer_table_round_trip);
+    RUN_TEST(test_rtc_mixed_neg_and_xfer_round_trip);
+    RUN_TEST(test_rtc_second_save_overwrites_first);
+    RUN_TEST(test_neg_load_slot_null_cpid_returns_invalid_arg);
+    RUN_TEST(test_neg_load_slot_null_ppid_returns_invalid_arg);
+    RUN_TEST(test_neg_load_slot_bad_idx_returns_invalid_arg);
+    RUN_TEST(test_neg_load_slot_not_initialized_returns_invalid_state);
+    RUN_TEST(test_xfer_load_slot_null_pid_returns_invalid_arg);
+    RUN_TEST(test_xfer_load_slot_bad_idx_returns_invalid_arg);
+    RUN_TEST(test_xfer_load_slot_not_initialized_returns_invalid_state);
 
     return UNITY_END();
 }

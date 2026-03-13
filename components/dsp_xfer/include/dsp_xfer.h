@@ -124,6 +124,23 @@ int              dsp_xfer_find_by_pid(const char *pid);
 int              dsp_xfer_count_active(void);
 bool             dsp_xfer_is_active(int idx);
 
+/**
+ * @brief Directly load a transfer slot at index @p idx with the given state
+ *        and process ID, bypassing the state machine and notify callback.
+ *
+ * Used exclusively by dsp_rtc_state_restore() to reconstruct the slot table
+ * after a deep-sleep wake-up without replaying events or triggering Core 1.
+ * Must be called after dsp_xfer_init() on an empty slot.
+ *
+ * @param idx         Slot index [0, DSP_XFER_MAX).
+ * @param state       State to set directly.
+ * @param process_id  NUL-terminated process ID (copied; max DSP_XFER_PID_LEN-1).
+ * @return ESP_OK on success.
+ *         ESP_ERR_INVALID_ARG if idx out of range or process_id is NULL.
+ *         ESP_ERR_INVALID_STATE if dsp_xfer_init() has not been called.
+ */
+esp_err_t dsp_xfer_load_slot(int idx, dsp_xfer_state_t state, const char *process_id);
+
 /* -------------------------------------------------------------------------
  * HTTP handler registration
  * ------------------------------------------------------------------------- */

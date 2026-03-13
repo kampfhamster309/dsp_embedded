@@ -181,6 +181,24 @@ bool dsp_neg_is_active(int idx)
     return s_table[idx].active;
 }
 
+esp_err_t dsp_neg_load_slot(int idx, dsp_neg_state_t state,
+                              const char *consumer_pid, const char *provider_pid)
+{
+    if (idx < 0 || idx >= DSP_NEG_MAX || !consumer_pid || !provider_pid) {
+        return ESP_ERR_INVALID_ARG;
+    }
+    if (!s_initialized) {
+        return ESP_ERR_INVALID_STATE;
+    }
+    s_table[idx].active = true;
+    s_table[idx].state  = state;
+    strncpy(s_table[idx].consumer_pid, consumer_pid, DSP_NEG_PID_LEN - 1u);
+    s_table[idx].consumer_pid[DSP_NEG_PID_LEN - 1u] = '\0';
+    strncpy(s_table[idx].provider_pid, provider_pid, DSP_NEG_PID_LEN - 1u);
+    s_table[idx].provider_pid[DSP_NEG_PID_LEN - 1u] = '\0';
+    return ESP_OK;
+}
+
 /* -------------------------------------------------------------------------
  * HTTP handlers
  * ------------------------------------------------------------------------- */

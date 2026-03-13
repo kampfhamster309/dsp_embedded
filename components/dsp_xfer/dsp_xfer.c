@@ -182,6 +182,21 @@ bool dsp_xfer_is_active(int idx)
     return s_table[idx].active;
 }
 
+esp_err_t dsp_xfer_load_slot(int idx, dsp_xfer_state_t state, const char *process_id)
+{
+    if (idx < 0 || idx >= DSP_XFER_MAX || !process_id) {
+        return ESP_ERR_INVALID_ARG;
+    }
+    if (!s_initialized) {
+        return ESP_ERR_INVALID_STATE;
+    }
+    s_table[idx].active = true;
+    s_table[idx].state  = state;
+    strncpy(s_table[idx].process_id, process_id, DSP_XFER_PID_LEN - 1u);
+    s_table[idx].process_id[DSP_XFER_PID_LEN - 1u] = '\0';
+    return ESP_OK;
+}
+
 /* -------------------------------------------------------------------------
  * HTTP handlers
  * ------------------------------------------------------------------------- */

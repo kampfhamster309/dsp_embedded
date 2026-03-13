@@ -17,6 +17,7 @@ typedef int32_t esp_err_t;
 #define ESP_ERR_NOT_FOUND     ((esp_err_t) 0x105)
 #define ESP_ERR_NOT_SUPPORTED ((esp_err_t) 0x106)
 #define ESP_ERR_TIMEOUT       ((esp_err_t) 0x107)
+#define ESP_ERR_INVALID_CRC   ((esp_err_t) 0x109)
 
 #define ESP_ERROR_CHECK(x) do { \
     esp_err_t _rc = (x); \
