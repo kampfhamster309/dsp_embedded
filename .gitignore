@@ -44,3 +44,4 @@ sdkconfig.wifi
 
 # Integration test venv
 integration/.venv/
+__pycache__/
