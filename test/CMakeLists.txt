@@ -270,6 +270,7 @@ add_executable(dsp_test_deep_sleep_on
     "${ROOT_DIR}/components/dsp_http/dsp_http.c"
     "${ROOT_DIR}/components/dsp_json/dsp_json.c"
     "${ROOT_DIR}/components/dsp_json/cjson/cJSON.c"
+    "${ROOT_DIR}/components/dsp_wifi/dsp_wifi.c"
 )
 
 target_compile_definitions(dsp_test_deep_sleep_on PRIVATE

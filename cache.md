@@ -2,8 +2,8 @@
 
 ## Current State
 
-**Last completed ticket:** DSP-601 – Deep Sleep entry logic (`dsp_power`)
-**Next ticket:** DSP-602 (M6 – Wake-up and state restoration)
+**Last completed ticket:** DSP-602 – Wake-up and state restoration (`dsp_power_handle_wakeup`)
+**Next ticket:** DSP-603 (M6 – Watchdog-secured power-save mode)
 **M5 validation status:** All ACs confirmed on ESP32-S3 (2026-03-13)
 
 ## Project Structure
@@ -59,8 +59,8 @@ dsp_embedded/
 │   ├── test_dsp_ring_buf.c  # 14 host-native tests: drain, overflow, wrap-around (DSP-504)
 │   ├── test_dsp_rtc_state.c # 23 host-native tests: sizes, round-trip, load_slot (DSP-505)
 │   ├── test_dsp_power.c     # 1 host-native test: flag disabled by default (DSP-601)
-│   ├── test_dsp_power_on.c  # 11 host-native tests: enabled path, RTC save, neg/xfer round-trip (DSP-601)
-│   ├── test_dsp_power_on_main.c # Unity runner for dsp_test_deep_sleep_on binary (DSP-601)
+│   ├── test_dsp_power_on.c  # 19 host-native tests: enter_deep_sleep + handle_wakeup (DSP-601/602)
+│   ├── test_dsp_power_on_main.c # Unity runner for dsp_test_deep_sleep_on binary (DSP-601/602)
 │   └── test_tickets_off_main.c # Unity runner for dsp_test_no_tickets binary
 │   ├── unity/                # git submodule: ThrowTheSwitch/Unity v2.6.0
 │   └── stubs/                # ESP-IDF header shims for host builds
@@ -146,10 +146,14 @@ dsp_embedded/
 
 - **dsp_power**: Entire component compiles away when `CONFIG_DSP_DEEP_SLEEP_BETWEEN_TX=0` — all code is inside `#if CONFIG_DSP_DEEP_SLEEP_BETWEEN_TX`. Verified with `nm` on device ELF: zero `dsp_power` symbols when flag=0.
 - **`dsp_power_enter_deep_sleep()` sequence**: (1) `dsp_rtc_state_save()`, (2) `dsp_http_stop()`, (3) `esp_deep_sleep_start()` on ESP / mock sleep fn on host. Never returns on ESP hardware.
-- **Host mock sleep fn**: `dsp_power_set_sleep_fn(fn, arg)` — only available on host (`#ifndef ESP_PLATFORM`). Used in tests to intercept sleep entry and assert state was already saved (via `dsp_rtc_state_is_valid()`) before the callback fires.
-- **`dsp_http_start()` host stub always returns `ESP_FAIL`** — the host stub never sets `is_running=true`. Do not assert `dsp_http_is_running()` is true in tests that call `dsp_http_start()` on host; it will always fail. Only assert `is_running()` is false after `enter_deep_sleep` (i.e., that stop was called).
-- **`dsp_test_deep_sleep_on` binary**: compiled with `-DCONFIG_DSP_DEEP_SLEEP_BETWEEN_TX=1`. Sources: `dsp_power.c`, `dsp_rtc_state.c`, `dsp_neg.c`, `dsp_xfer.c`, `dsp_http.c`, `dsp_json.c`, `cjson/cJSON.c`. Needs `dsp_json/cjson` in `target_include_directories` because `dsp_xfer.c` → `dsp_json.h` → `cJSON.h`.
-- **ESP-IDF CMakeLists for dsp_power**: `REQUIRES dsp_config dsp_rtc_state dsp_http esp_hw_support`. The `esp_deep_sleep_start()` symbol is in `esp_hw_support`; only needed on ESP but must be declared.
+- **`dsp_power_handle_wakeup()` sequence**: (1) get wakeup cause (real or mock), (2) if not TIMER → return `ESP_ERR_INVALID_STATE` (cold boot path), (3) `dsp_rtc_state_restore()`, (4) `dsp_wifi_connect()` non-fatal, (5) `dsp_http_start()` non-fatal → return `ESP_OK`.
+- **`dsp_power_wakeup_cause_t` enum**: `UNDEFINED=0, TIMER=1, OTHER=2`. Independent of `esp_sleep_wakeup_cause_t` so tests work on host. On ESP, `get_wakeup_cause()` maps from `esp_sleep_get_wakeup_cause()`. On host, injected via `dsp_power_set_wakeup_cause()`.
+- **Host mock wakeup cause**: `dsp_power_set_wakeup_cause(cause)` — host only (`#ifndef ESP_PLATFORM`). Default is `UNDEFINED`. Reset in setUp/tearDown.
+- **Host mock sleep fn**: `dsp_power_set_sleep_fn(fn, arg)` — host only. Used in tests to intercept sleep entry and assert state was already saved before callback fires.
+- **`dsp_http_start()` host stub always returns `ESP_FAIL`** — never sets `is_running=true`. Do not assert `is_running()` is true after calling `dsp_http_start()` on host. Only assert it's false after `enter_deep_sleep` (stop was called).
+- **`dsp_wifi_connect()` host stub**: returns `ESP_FAIL` unconditionally, no state check, safe to call without prior `dsp_wifi_init()`. `dsp_power_handle_wakeup()` treats a FAIL from `dsp_wifi_connect()` as a warning (non-fatal).
+- **`dsp_test_deep_sleep_on` binary**: compiled with `-DCONFIG_DSP_DEEP_SLEEP_BETWEEN_TX=1`. Sources: `dsp_power.c`, `dsp_rtc_state.c`, `dsp_neg.c`, `dsp_xfer.c`, `dsp_http.c`, `dsp_json.c`, `cjson/cJSON.c`, `dsp_wifi.c`. Needs `dsp_json/cjson` in `target_include_directories` because `dsp_xfer.c` → `dsp_json.h` → `cJSON.h`.
+- **ESP-IDF CMakeLists for dsp_power**: `REQUIRES dsp_config dsp_rtc_state dsp_http dsp_wifi esp_hw_support`. `esp_deep_sleep_start()` is in `esp_hw_support`.
 
 ### ESP32-S3 Board / Serial Capture
 

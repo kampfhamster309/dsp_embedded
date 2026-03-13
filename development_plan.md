@@ -152,7 +152,7 @@ Agent rules (AGENTS.md) apply throughout: git commit after every ticket, create 
 | Ticket | Title | Description |
 |--------|-------|-------------|
 | ✅ DSP-601 | Deep Sleep entry logic | Implement `dsp_power_enter_deep_sleep()`: flush pending state to RTC memory, close HTTP server gracefully, trigger esp_deep_sleep_start(). Behind `CONFIG_DSP_DEEP_SLEEP_BETWEEN_TX`. |
-| DSP-602 | Wake-up and state restoration | Implement wake-up handler: detect wake cause, restore state from RTC memory, reconnect WiFi, resume HTTP server. Unit-test state restore logic on host. |
+| ✅ DSP-602 | Wake-up and state restoration | Implement wake-up handler: detect wake cause, restore state from RTC memory, reconnect WiFi, resume HTTP server. Unit-test state restore logic on host. |
 | DSP-603 | Watchdog-secured power-save mode | Implement power-save idle loop between data acquisition cycles using `esp_pm` light-sleep. Configure watchdog timer. Test that watchdog fires on simulated hang. |
 | DSP-604 | Power budget measurement | Document procedure in `doc/power_measurement.md` for measuring current at each operating mode (active WiFi, light sleep, deep sleep). Add to `human_to_do.md` (requires hardware + ammeter). |
 

@@ -28,6 +28,7 @@ void setUp(void)
 {
     dsp_rtc_state_clear();
     dsp_power_set_sleep_fn(NULL, NULL);
+    dsp_power_set_wakeup_cause(DSP_POWER_WAKEUP_UNDEFINED);
     dsp_neg_deinit();
     dsp_xfer_deinit();
 }
@@ -36,6 +37,7 @@ void tearDown(void)
 {
     dsp_rtc_state_clear();
     dsp_power_set_sleep_fn(NULL, NULL);
+    dsp_power_set_wakeup_cause(DSP_POWER_WAKEUP_UNDEFINED);
     dsp_neg_deinit();
     dsp_xfer_deinit();
     dsp_http_stop();
@@ -272,4 +274,169 @@ void test_power_wake_restore_recovers_neg_state(void)
     TEST_ASSERT_EQUAL_INT(DSP_NEG_STATE_AGREED, dsp_neg_get_state(0));
     TEST_ASSERT_EQUAL_STRING("urn:consumer:wake-1", dsp_neg_get_consumer_pid(0));
     TEST_ASSERT_EQUAL_STRING("urn:provider:wake-1", dsp_neg_get_provider_pid(0));
+}
+
+/* -------------------------------------------------------------------------
+ * dsp_power_handle_wakeup tests (DSP-602)
+ * ------------------------------------------------------------------------- */
+
+void test_power_handle_wakeup_undefined_returns_invalid_state(void)
+{
+    /* Default cause is UNDEFINED (cold boot) — handle_wakeup should bail out. */
+    dsp_power_set_wakeup_cause(DSP_POWER_WAKEUP_UNDEFINED);
+    esp_err_t err = dsp_power_handle_wakeup();
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, err);
+}
+
+void test_power_handle_wakeup_other_returns_invalid_state(void)
+{
+    /* Non-timer cause (e.g. EXT pin) — should also bail out without restoring. */
+    dsp_power_set_wakeup_cause(DSP_POWER_WAKEUP_OTHER);
+    esp_err_t err = dsp_power_handle_wakeup();
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, err);
+}
+
+void test_power_handle_wakeup_timer_no_rtc_state_returns_invalid_state(void)
+{
+    /* Timer wake but no saved RTC state (e.g. first ever boot after flashing). */
+    dsp_neg_init();
+    dsp_xfer_init();
+    dsp_rtc_state_clear();
+    dsp_power_set_wakeup_cause(DSP_POWER_WAKEUP_TIMER);
+
+    esp_err_t err = dsp_power_handle_wakeup();
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, err);
+}
+
+void test_power_handle_wakeup_timer_empty_tables_returns_ok(void)
+{
+    /* Timer wake with valid (but empty) RTC state — should succeed. */
+    dsp_neg_init();
+    dsp_xfer_init();
+    dsp_rtc_state_save();   /* saves empty tables */
+
+    dsp_neg_deinit();
+    dsp_xfer_deinit();
+    dsp_neg_init();
+    dsp_xfer_init();
+
+    dsp_power_set_wakeup_cause(DSP_POWER_WAKEUP_TIMER);
+    esp_err_t err = dsp_power_handle_wakeup();
+    TEST_ASSERT_EQUAL(ESP_OK, err);
+    TEST_ASSERT_EQUAL_INT(0, dsp_neg_count_active());
+    TEST_ASSERT_EQUAL_INT(0, dsp_xfer_count_active());
+}
+
+void test_power_handle_wakeup_undefined_does_not_restore_slots(void)
+{
+    /* Even if there is valid RTC state, undefined cause must not restore. */
+    dsp_neg_init();
+    dsp_xfer_init();
+    int idx = dsp_neg_create("urn:consumer:cold", "urn:provider:cold");
+    TEST_ASSERT_EQUAL_INT(0, idx);
+    dsp_rtc_state_save();
+
+    dsp_neg_deinit();
+    dsp_xfer_deinit();
+    dsp_neg_init();
+    dsp_xfer_init();
+
+    dsp_power_set_wakeup_cause(DSP_POWER_WAKEUP_UNDEFINED);
+    dsp_power_handle_wakeup();
+
+    /* Tables must remain empty — no restore happened. */
+    TEST_ASSERT_EQUAL_INT(0, dsp_neg_count_active());
+}
+
+void test_power_handle_wakeup_timer_restores_neg_slot(void)
+{
+    /* --- "before sleep" phase --- */
+    dsp_neg_init();
+    dsp_xfer_init();
+
+    int idx = dsp_neg_create("urn:consumer:hw-1", "urn:provider:hw-1");
+    TEST_ASSERT_EQUAL_INT(0, idx);
+    dsp_neg_apply(idx, DSP_NEG_EVENT_OFFER);
+    TEST_ASSERT_EQUAL_INT(DSP_NEG_STATE_OFFERED, dsp_neg_get_state(0));
+
+    dsp_power_set_sleep_fn(mock_sleep, NULL);
+    dsp_power_enter_deep_sleep();
+
+    /* --- "after wake" phase --- */
+    dsp_neg_deinit();
+    dsp_xfer_deinit();
+    dsp_neg_init();
+    dsp_xfer_init();
+
+    dsp_power_set_wakeup_cause(DSP_POWER_WAKEUP_TIMER);
+    esp_err_t err = dsp_power_handle_wakeup();
+    TEST_ASSERT_EQUAL(ESP_OK, err);
+
+    TEST_ASSERT_TRUE(dsp_neg_is_active(0));
+    TEST_ASSERT_EQUAL_INT(DSP_NEG_STATE_OFFERED, dsp_neg_get_state(0));
+    TEST_ASSERT_EQUAL_STRING("urn:consumer:hw-1", dsp_neg_get_consumer_pid(0));
+    TEST_ASSERT_EQUAL_STRING("urn:provider:hw-1", dsp_neg_get_provider_pid(0));
+}
+
+void test_power_handle_wakeup_timer_restores_xfer_slot(void)
+{
+    /* --- "before sleep" phase --- */
+    dsp_neg_init();
+    dsp_xfer_init();
+
+    int idx = dsp_xfer_create("urn:xfer:hw-1");
+    TEST_ASSERT_EQUAL_INT(0, idx);
+    dsp_xfer_apply(idx, DSP_XFER_EVENT_START);
+    TEST_ASSERT_EQUAL_INT(DSP_XFER_STATE_TRANSFERRING, dsp_xfer_get_state(0));
+
+    dsp_power_set_sleep_fn(mock_sleep, NULL);
+    dsp_power_enter_deep_sleep();
+
+    /* --- "after wake" phase --- */
+    dsp_neg_deinit();
+    dsp_xfer_deinit();
+    dsp_neg_init();
+    dsp_xfer_init();
+
+    dsp_power_set_wakeup_cause(DSP_POWER_WAKEUP_TIMER);
+    esp_err_t err = dsp_power_handle_wakeup();
+    TEST_ASSERT_EQUAL(ESP_OK, err);
+
+    TEST_ASSERT_TRUE(dsp_xfer_is_active(0));
+    TEST_ASSERT_EQUAL_INT(DSP_XFER_STATE_TRANSFERRING, dsp_xfer_get_state(0));
+    TEST_ASSERT_EQUAL_STRING("urn:xfer:hw-1", dsp_xfer_get_process_id(0));
+}
+
+void test_power_handle_wakeup_timer_restores_agreed_neg_state(void)
+{
+    /* M6 AC: "ESP_SLEEP_WAKEUP_TIMER cause with a saved negotiation slot —
+     * after dsp_rtc_state_restore() the slot's state and process ID are
+     * unchanged." (verified via handle_wakeup which calls restore internally) */
+    dsp_neg_init();
+    dsp_xfer_init();
+
+    int idx = dsp_neg_create("urn:consumer:agreed-1", "urn:provider:agreed-1");
+    TEST_ASSERT_EQUAL_INT(0, idx);
+    dsp_neg_apply(idx, DSP_NEG_EVENT_OFFER);
+    dsp_neg_apply(idx, DSP_NEG_EVENT_AGREE);
+    TEST_ASSERT_EQUAL_INT(DSP_NEG_STATE_AGREED, dsp_neg_get_state(0));
+
+    /* Sleep: state saved. */
+    dsp_power_set_sleep_fn(mock_sleep, NULL);
+    dsp_power_enter_deep_sleep();
+
+    /* Wake: reinit + handle_wakeup with timer cause. */
+    dsp_neg_deinit();
+    dsp_xfer_deinit();
+    dsp_neg_init();
+    dsp_xfer_init();
+
+    dsp_power_set_wakeup_cause(DSP_POWER_WAKEUP_TIMER);
+    esp_err_t err = dsp_power_handle_wakeup();
+    TEST_ASSERT_EQUAL(ESP_OK, err);
+
+    /* State and PIDs must be byte-identical to what was saved. */
+    TEST_ASSERT_EQUAL_INT(DSP_NEG_STATE_AGREED, dsp_neg_get_state(0));
+    TEST_ASSERT_EQUAL_STRING("urn:consumer:agreed-1", dsp_neg_get_consumer_pid(0));
+    TEST_ASSERT_EQUAL_STRING("urn:provider:agreed-1", dsp_neg_get_provider_pid(0));
 }
