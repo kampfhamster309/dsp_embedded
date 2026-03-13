@@ -177,7 +177,7 @@ dsp_embedded/
 - **USB-CDC re-enumeration delay**: `app_main` has a 3-second `vTaskDelay` at the top to allow the USB-CDC host to re-enumerate after a firmware reset. This is intentional — do not remove it.
 - **Boot timestamps**: The ESP32-S3 starts counting from 0 ms at reset. `I (3501) dsp_protocol: ...` means 3501 ms from reset. The 3-second USB delay is visible as the gap between reset and first `dsp_embedded` log line.
 - **Heap at boot** (observed, 2026-03-13): `[boot] 313 KB free`. After full dual-core init: `[after-application] min_free=240 KB`. Protocol stack (TLS+HTTP+WiFi driver): ~73 KB consumed total.
-- **WiFi credentials**: No NVS credentials are stored by default. `dsp_wifi_init` returns `0x1102` (`ESP_ERR_NVS_NOT_FOUND`). To provision: set `CONFIG_DSP_WIFI_PROVISION=y` and `CONFIG_DSP_WIFI_PROVISION_SSID` / `CONFIG_DSP_WIFI_PROVISION_PASSWORD` in sdkconfig (or use a local `sdkconfig.wifi` fragment), flash once, then revert.
+- **WiFi credentials**: `sdkconfig.wifi` exists in the project root with real WiFi credentials. Use it when a ticket requires actual WiFi connectivity on the board: `idf.py -DSDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.wifi" build` (or merge into sdkconfig.defaults temporarily). The file is gitignored (contains credentials). Without this file, `dsp_wifi_init` returns `0x1102` (`ESP_ERR_NVS_NOT_FOUND`).
 - **`idf.py` not on PATH**: always `source ~/esp/esp-idf/export.sh` first, or invoke as `python /home/cyphus309/esp/esp-idf/tools/idf.py`.
 - **`python` vs `python3`**: The system has `python3` but not `python`. Use `python3 -m esptool` not `python -m esptool`.
 
