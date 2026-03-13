@@ -113,6 +113,8 @@ add_executable(dsp_test_runner
     "${ROOT_DIR}/components/dsp_xfer/dsp_xfer.c"
     test_dsp_shared.c
     "${ROOT_DIR}/components/dsp_shared/dsp_shared.c"
+    test_dsp_protocol.c
+    "${ROOT_DIR}/components/dsp_protocol/dsp_protocol.c"
 )
 
 target_link_libraries(dsp_test_runner PRIVATE

@@ -495,6 +495,25 @@ extern void test_ring_overflow_drops_newest(void);
 extern void test_ring_wrap_around(void);
 
 /* -------------------------------------------------------------------------
+ * test_dsp_protocol.c – Core 0 protocol task setup (DSP-502)
+ * ------------------------------------------------------------------------- */
+extern void test_protocol_start_null_sh_returns_invalid_arg(void);
+extern void test_protocol_not_running_before_start(void);
+extern void test_protocol_start_returns_ok(void);
+extern void test_protocol_is_running_after_start(void);
+extern void test_protocol_not_running_after_stop(void);
+extern void test_protocol_stop_safe_before_start(void);
+extern void test_protocol_double_stop_safe(void);
+extern void test_protocol_sets_core0_ready(void);
+extern void test_protocol_clears_core0_ready_on_stop(void);
+extern void test_protocol_catalog_initialized_after_start(void);
+extern void test_protocol_xfer_initialized_after_start(void);
+extern void test_protocol_catalog_deinitialized_after_stop(void);
+extern void test_protocol_xfer_deinitialized_after_stop(void);
+extern void test_protocol_task_core_is_zero(void);
+extern void test_protocol_task_stack_at_least_4096(void);
+
+/* -------------------------------------------------------------------------
  * main
  * ------------------------------------------------------------------------- */
 int main(void)
@@ -962,6 +981,23 @@ int main(void)
     RUN_TEST(test_ring_fill_to_capacity_no_loss);
     RUN_TEST(test_ring_overflow_drops_newest);
     RUN_TEST(test_ring_wrap_around);
+
+    /* dsp_protocol – Core 0 task setup (DSP-502) */
+    RUN_TEST(test_protocol_start_null_sh_returns_invalid_arg);
+    RUN_TEST(test_protocol_not_running_before_start);
+    RUN_TEST(test_protocol_start_returns_ok);
+    RUN_TEST(test_protocol_is_running_after_start);
+    RUN_TEST(test_protocol_not_running_after_stop);
+    RUN_TEST(test_protocol_stop_safe_before_start);
+    RUN_TEST(test_protocol_double_stop_safe);
+    RUN_TEST(test_protocol_sets_core0_ready);
+    RUN_TEST(test_protocol_clears_core0_ready_on_stop);
+    RUN_TEST(test_protocol_catalog_initialized_after_start);
+    RUN_TEST(test_protocol_xfer_initialized_after_start);
+    RUN_TEST(test_protocol_catalog_deinitialized_after_stop);
+    RUN_TEST(test_protocol_xfer_deinitialized_after_stop);
+    RUN_TEST(test_protocol_task_core_is_zero);
+    RUN_TEST(test_protocol_task_stack_at_least_4096);
 
     return UNITY_END();
 }
