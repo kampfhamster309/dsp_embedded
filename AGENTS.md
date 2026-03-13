@@ -1,5 +1,6 @@
 ## Rules for Agents
 * While setting up the initial project structure, always create a git repository for the project
+* After a ticket has been implemented and tested, mark it as done in development_plan.md
 * After every implementation step, create an appropriate git commit
 * if a cache.md exists in the same directory as this AGENTS.md file, update it after every implementation step with the current state of the project, including all learnings and gotchas
 * If instructions are unclear: do not guess, ask 
