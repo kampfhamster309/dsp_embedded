@@ -2,8 +2,8 @@
 
 ## Current State
 
-**Last completed ticket:** DSP-603 – Watchdog-secured power-save mode
-**Next ticket:** DSP-604 (M6 – Power budget measurement, hardware + ammeter required)
+**Last completed ticket:** DSP-604 – Power budget measurement (doc + human_to_do)
+**Next ticket:** DSP-701 (M7 – Integration test: catalog fetch)
 **M5 validation status:** All ACs confirmed on ESP32-S3 (2026-03-13)
 
 ## Project Structure
@@ -159,6 +159,7 @@ dsp_embedded/
 - **`CONFIG_DSP_TEST_WATCHDOG_HANG` (device test flag)**: Build with `sdkconfig.hang_test` containing `CONFIG_DSP_TEST_WATCHDOG_HANG=y`. After first sample, acquisition task logs "DSP-603 hang test: blocking..." and enters `for(;;)` without feeding WDT. TWDT fires at ~5000ms with `E (task_wdt) Task watchdog got triggered... - dsp_application (CPU 1)`. Default=0; never enable in production.
 - **TWDT timeout window observed**: TWDT fires at ~5000 ms (`task_wdt` log at `I(8786)` = 5 s after hang message at `I(3787)`). Ring buffer fills in ~3.2 s at 100 ms / 4 channels; normal acquisition feeds WDT each 100 ms so TWDT never fires in normal operation.
 - **`esp_task_wdt.h` component location gotcha**: `esp_task_wdt` is NOT a standalone ESP-IDF component name. The header lives in `esp_system`. Use `REQUIRES ... esp_system` not `esp_task_wdt` — the latter causes `Failed to resolve component 'esp_task_wdt'` at cmake time.
+- **DSP-604 power measurement**: `doc/power_measurement.md` has full procedure + expected ranges. Physical measurements pending (requires ammeter; added to `human_to_do.md`). Datasheet figures: Active WiFi 105–130 mA avg; light-sleep 20–45 mA avg (DTIM-dependent); deep-sleep 7–15 µA (RTC fast+slow on).
 
 ### ESP32-S3 Board / Serial Capture
 
