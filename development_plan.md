@@ -129,7 +129,7 @@ Agent rules (AGENTS.md) apply throughout: git commit after every ticket, create 
 
 | Ticket | Title | Description |
 |--------|-------|-------------|
-| DSP-501 | Shared memory layout definition | Define `dsp_shared.h`: ring buffer struct, FreeRTOS queue handles, and mutex guards for all shared state. |
+| ✅ DSP-501 | Shared memory layout definition | Define `dsp_shared.h`: ring buffer struct, FreeRTOS queue handles, and mutex guards for all shared state. |
 | DSP-502 | Core 0 task setup | Pin `dsp_protocol_task` to Core 0. Initialize HTTP server, DSP state machines, and JWT validator within this task. Set stack size to fit memory budget. |
 | DSP-503 | Core 1 task setup | Pin `dsp_application_task` to Core 1. Implement stub sensor polling loop and ADC read. Write data into ring buffer. Set stack size. |
 | DSP-504 | Ring buffer producer/consumer | Implement lock-free ring buffer (or FreeRTOS stream buffer) between Core 1 (producer) and Core 0 (consumer for transfers). Unit-test on host. |

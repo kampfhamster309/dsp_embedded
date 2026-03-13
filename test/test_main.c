@@ -466,6 +466,35 @@ extern void test_daps_error_codes_are_distinct(void);
 extern void test_daps_esp_platform_absent_in_host_build(void);
 
 /* -------------------------------------------------------------------------
+ * test_dsp_shared.c – shared memory layout (DSP-501)
+ * ------------------------------------------------------------------------- */
+extern void test_shared_sample_size(void);
+extern void test_shared_sample_offsets(void);
+extern void test_shared_ring_buf_size(void);
+extern void test_shared_ring_buf_offsets(void);
+extern void test_shared_ring_buf_at_offset_zero_in_shared(void);
+extern void test_shared_capacity_is_power_of_two(void);
+extern void test_shared_init_null_returns_invalid_arg(void);
+extern void test_shared_init_returns_ok(void);
+extern void test_shared_init_zeroes_ring_buf(void);
+extern void test_shared_init_zeroes_ready_flags(void);
+extern void test_shared_deinit_null_safe(void);
+extern void test_shared_double_init_safe(void);
+extern void test_shared_double_deinit_safe(void);
+extern void test_ring_push_null_sh_returns_invalid_arg(void);
+extern void test_ring_push_null_sample_returns_invalid_arg(void);
+extern void test_ring_pop_null_sh_returns_invalid_arg(void);
+extern void test_ring_pop_null_out_returns_invalid_arg(void);
+extern void test_ring_count_null_returns_zero(void);
+extern void test_ring_empty_pop_returns_not_found(void);
+extern void test_ring_count_zero_after_init(void);
+extern void test_ring_one_item_round_trip(void);
+extern void test_ring_fifo_order(void);
+extern void test_ring_fill_to_capacity_no_loss(void);
+extern void test_ring_overflow_drops_newest(void);
+extern void test_ring_wrap_around(void);
+
+/* -------------------------------------------------------------------------
  * main
  * ------------------------------------------------------------------------- */
 int main(void)
@@ -906,6 +935,33 @@ int main(void)
     RUN_TEST(test_daps_max_token_len_fits_typical_dat);
     RUN_TEST(test_daps_error_codes_are_distinct);
     RUN_TEST(test_daps_esp_platform_absent_in_host_build);
+
+    /* dsp_shared – struct layout and ring buffer (DSP-501) */
+    RUN_TEST(test_shared_sample_size);
+    RUN_TEST(test_shared_sample_offsets);
+    RUN_TEST(test_shared_ring_buf_size);
+    RUN_TEST(test_shared_ring_buf_offsets);
+    RUN_TEST(test_shared_ring_buf_at_offset_zero_in_shared);
+    RUN_TEST(test_shared_capacity_is_power_of_two);
+    RUN_TEST(test_shared_init_null_returns_invalid_arg);
+    RUN_TEST(test_shared_init_returns_ok);
+    RUN_TEST(test_shared_init_zeroes_ring_buf);
+    RUN_TEST(test_shared_init_zeroes_ready_flags);
+    RUN_TEST(test_shared_deinit_null_safe);
+    RUN_TEST(test_shared_double_init_safe);
+    RUN_TEST(test_shared_double_deinit_safe);
+    RUN_TEST(test_ring_push_null_sh_returns_invalid_arg);
+    RUN_TEST(test_ring_push_null_sample_returns_invalid_arg);
+    RUN_TEST(test_ring_pop_null_sh_returns_invalid_arg);
+    RUN_TEST(test_ring_pop_null_out_returns_invalid_arg);
+    RUN_TEST(test_ring_count_null_returns_zero);
+    RUN_TEST(test_ring_empty_pop_returns_not_found);
+    RUN_TEST(test_ring_count_zero_after_init);
+    RUN_TEST(test_ring_one_item_round_trip);
+    RUN_TEST(test_ring_fifo_order);
+    RUN_TEST(test_ring_fill_to_capacity_no_loss);
+    RUN_TEST(test_ring_overflow_drops_newest);
+    RUN_TEST(test_ring_wrap_around);
 
     return UNITY_END();
 }
