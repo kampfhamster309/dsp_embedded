@@ -513,6 +513,23 @@ extern void test_protocol_xfer_deinitialized_after_stop(void);
 extern void test_protocol_task_core_is_zero(void);
 extern void test_protocol_task_stack_at_least_4096(void);
 
+/* dsp_application (DSP-503) */
+extern void test_application_start_null_sh_returns_invalid_arg(void);
+extern void test_application_not_running_before_start(void);
+extern void test_application_start_returns_ok(void);
+extern void test_application_is_running_after_start(void);
+extern void test_application_not_running_after_stop(void);
+extern void test_application_stop_safe_before_start(void);
+extern void test_application_double_stop_safe(void);
+extern void test_application_sets_core1_ready(void);
+extern void test_application_clears_core1_ready_on_stop(void);
+extern void test_application_ring_buf_has_sample_after_start(void);
+extern void test_application_sample_channel_is_valid(void);
+extern void test_application_sample_raw_value_nonzero(void);
+extern void test_application_ring_buf_empty_after_stop_and_pop(void);
+extern void test_application_task_core_is_one(void);
+extern void test_application_task_stack_at_least_4096(void);
+
 /* -------------------------------------------------------------------------
  * main
  * ------------------------------------------------------------------------- */
@@ -998,6 +1015,23 @@ int main(void)
     RUN_TEST(test_protocol_xfer_deinitialized_after_stop);
     RUN_TEST(test_protocol_task_core_is_zero);
     RUN_TEST(test_protocol_task_stack_at_least_4096);
+
+    /* dsp_application – Core 1 acquisition task (DSP-503) */
+    RUN_TEST(test_application_start_null_sh_returns_invalid_arg);
+    RUN_TEST(test_application_not_running_before_start);
+    RUN_TEST(test_application_start_returns_ok);
+    RUN_TEST(test_application_is_running_after_start);
+    RUN_TEST(test_application_not_running_after_stop);
+    RUN_TEST(test_application_stop_safe_before_start);
+    RUN_TEST(test_application_double_stop_safe);
+    RUN_TEST(test_application_sets_core1_ready);
+    RUN_TEST(test_application_clears_core1_ready_on_stop);
+    RUN_TEST(test_application_ring_buf_has_sample_after_start);
+    RUN_TEST(test_application_sample_channel_is_valid);
+    RUN_TEST(test_application_sample_raw_value_nonzero);
+    RUN_TEST(test_application_ring_buf_empty_after_stop_and_pop);
+    RUN_TEST(test_application_task_core_is_one);
+    RUN_TEST(test_application_task_stack_at_least_4096);
 
     return UNITY_END();
 }

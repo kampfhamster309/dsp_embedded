@@ -90,6 +90,16 @@ menu "DSP Embedded Configuration"
             Adds minimal overhead but is not required for basic provider
             operation.
 
+    config DSP_APPLICATION_POLL_INTERVAL_MS
+        int "Sensor acquisition poll interval (milliseconds)"
+        default 100
+        range 10 10000
+        help
+            Time in milliseconds between successive ADC readings in the Core 1
+            acquisition loop. Lower values increase sample throughput but raise
+            CPU load and ring buffer pressure. The default of 100 ms yields
+            10 samples per second per channel.
+
     config DSP_MAX_CONCURRENT_NEGOTIATIONS
         int "Maximum concurrent negotiations"
         default 4

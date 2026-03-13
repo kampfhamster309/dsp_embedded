@@ -171,6 +171,21 @@
 #endif
 
 /* -------------------------------------------------------------------------
+ * Sensor acquisition
+ * ------------------------------------------------------------------------- */
+
+/**
+ * CONFIG_DSP_APPLICATION_POLL_INTERVAL_MS
+ *
+ * Milliseconds between successive ADC readings in the Core 1 acquisition loop.
+ * Lower values increase sample rate but raise CPU load and ring buffer pressure.
+ * Default: 100 ms (10 samples/second per channel).
+ */
+#ifndef CONFIG_DSP_APPLICATION_POLL_INTERVAL_MS
+#define CONFIG_DSP_APPLICATION_POLL_INTERVAL_MS 100
+#endif
+
+/* -------------------------------------------------------------------------
  * Network
  * ------------------------------------------------------------------------- */
 
