@@ -546,6 +546,9 @@ extern void test_drain_wrap_around(void);
 extern void test_producer_consumer_interleaved(void);
 extern void test_producer_consumer_bursty_producer(void);
 
+/* dsp_power – disabled path (DSP-601) */
+extern void test_power_flag_is_disabled_by_default(void);
+
 /* dsp_rtc_state (DSP-505) */
 extern void test_rtc_neg_slot_size(void);
 extern void test_rtc_xfer_slot_size(void);
@@ -1089,6 +1092,9 @@ int main(void)
     RUN_TEST(test_drain_wrap_around);
     RUN_TEST(test_producer_consumer_interleaved);
     RUN_TEST(test_producer_consumer_bursty_producer);
+
+    /* dsp_power – disabled path (DSP-601) */
+    RUN_TEST(test_power_flag_is_disabled_by_default);
 
     /* dsp_rtc_state – RTC memory persistence (DSP-505) */
     RUN_TEST(test_rtc_neg_slot_size);

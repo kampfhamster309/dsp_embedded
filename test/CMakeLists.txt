@@ -120,6 +120,8 @@ add_executable(dsp_test_runner
     test_dsp_ring_buf.c
     test_dsp_rtc_state.c
     "${ROOT_DIR}/components/dsp_rtc_state/dsp_rtc_state.c"
+    test_dsp_power.c
+    "${ROOT_DIR}/components/dsp_power/dsp_power.c"
 )
 
 target_link_libraries(dsp_test_runner PRIVATE
@@ -252,6 +254,41 @@ target_include_directories(dsp_test_psk_on PRIVATE
 )
 
 # ---------------------------------------------------------------------------
+# dsp_test_deep_sleep_on – deep-sleep power management ENABLED path (DSP-601)
+#
+# Compiled with -DCONFIG_DSP_DEEP_SLEEP_BETWEEN_TX=1, overriding the
+# default-0 fallback in dsp_config.h.  Exercises the full enabled path of
+# dsp_power: mock sleep fn, RTC state save, HTTP stop, and neg/xfer round-trip.
+# ---------------------------------------------------------------------------
+add_executable(dsp_test_deep_sleep_on
+    test_dsp_power_on_main.c
+    test_dsp_power_on.c
+    "${ROOT_DIR}/components/dsp_power/dsp_power.c"
+    "${ROOT_DIR}/components/dsp_rtc_state/dsp_rtc_state.c"
+    "${ROOT_DIR}/components/dsp_neg/dsp_neg.c"
+    "${ROOT_DIR}/components/dsp_xfer/dsp_xfer.c"
+    "${ROOT_DIR}/components/dsp_http/dsp_http.c"
+    "${ROOT_DIR}/components/dsp_json/dsp_json.c"
+    "${ROOT_DIR}/components/dsp_json/cjson/cJSON.c"
+)
+
+target_compile_definitions(dsp_test_deep_sleep_on PRIVATE
+    CONFIG_DSP_DEEP_SLEEP_BETWEEN_TX=1
+)
+
+target_link_libraries(dsp_test_deep_sleep_on PRIVATE
+    dsp_embedded_host
+    unity
+)
+
+target_include_directories(dsp_test_deep_sleep_on PRIVATE
+    ${COMPONENT_INCLUDE_DIRS}
+    "${COMPONENTS_DIR}/dsp_json/cjson"
+    ${STUBS_DIR}
+    ${UNITY_DIR}/src
+)
+
+# ---------------------------------------------------------------------------
 # CTest
 # ---------------------------------------------------------------------------
 enable_testing()
@@ -260,6 +297,7 @@ add_test(NAME dsp_test_no_tickets         COMMAND dsp_test_no_tickets)
 add_test(NAME dsp_test_terminate_on       COMMAND dsp_test_terminate_on)
 add_test(NAME dsp_test_catalog_request_on COMMAND dsp_test_catalog_request_on)
 add_test(NAME dsp_test_psk_on             COMMAND dsp_test_psk_on)
+add_test(NAME dsp_test_deep_sleep_on      COMMAND dsp_test_deep_sleep_on)
 
 # ---------------------------------------------------------------------------
 # Build summary

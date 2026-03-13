@@ -111,6 +111,21 @@
 /**
  * CONFIG_DSP_DEEP_SLEEP_BETWEEN_TX
  *
+ * Enables the dsp_power module: the node enters ESP deep sleep after each
+ * completed transfer and wakes on a timer for the next acquisition cycle.
+ * Protocol state (negotiations, transfers) is preserved in RTC memory across
+ * sleep cycles via dsp_rtc_state_save/restore.
+ * When disabled (default), the entire dsp_power module compiles away with
+ * zero code/RAM overhead.
+ * Default: disabled.
+ */
+#ifndef CONFIG_DSP_DEEP_SLEEP_BETWEEN_TX
+#define CONFIG_DSP_DEEP_SLEEP_BETWEEN_TX 0
+#endif
+
+/**
+ * CONFIG_DSP_DEEP_SLEEP_BETWEEN_TX
+ *
  * Enables deep-sleep power management between data transfers.
  * State is preserved in RTC memory.  Average idle current drops from
  * ~120 mA (WiFi active) to ~20 µA (deep sleep).
