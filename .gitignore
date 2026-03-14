@@ -1,8 +1,10 @@
 # ESP-IDF build artifacts
 build/
 
-# Host-native test build
+# Host-native test build and coverage artifacts
 test/build/
+test/build_cov/
+test/*.gcov
 sdkconfig
 sdkconfig.old
 dependencies.lock
