@@ -2,11 +2,11 @@
 
 ## Current State
 
-**Last completed ticket:** DSP-804 – PSRAM support (sdkconfig.psram; 8MB OPI PSRAM verified on device; 52/52 integration tests pass)
-**Next ticket:** DSP-805 – Final README and documentation update
+**Last completed ticket:** DSP-805 – Final README and documentation update (complete build/flash/test/provisioning instructions; all doc/ links verified)
+**Next ticket:** DSP-806 – Tag v0.1.0 release
 **M5 validation status:** All ACs confirmed on ESP32-S3 (2026-03-13)
 **M7 validation status:** All ACs confirmed on ESP32-S3 (2026-03-14); 52/52 integration tests pass
-**M8 status:** DSP-801 ✅, DSP-802 ✅, DSP-803 ✅, DSP-804 ✅ (2026-03-14)
+**M8 status:** DSP-801 ✅, DSP-802 ✅, DSP-803 ✅, DSP-804 ✅, DSP-805 ✅ (2026-03-14)
 
 ## RAM Budget Summary (DSP-706)
 

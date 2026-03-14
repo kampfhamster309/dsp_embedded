@@ -200,7 +200,7 @@ Agent rules (AGENTS.md) apply throughout: git commit after every ticket, create 
 | DSP-802 ✅ | Static analysis pass | Run `cppcheck` or `clang-tidy` on the codebase. Fix all warnings of severity ≥ medium. |
 | DSP-803 ✅ | Flash-time provisioning tooling | Write a Python helper script `tools/provision.py` that flashes device certificate and PSK into NVS partitions. Document in `human_to_do.md` (requires connected hardware). |
 | DSP-804 ✅ | PSRAM support | Enable and test operation with 8 MB PSRAM behind `CONFIG_DSP_PSRAM_ENABLE`. Verify no heap corruption at the boundary. |
-| DSP-805 | Final README and documentation update | Update `README.md` with complete build, flash, and test instructions. Ensure `doc/` is complete and all links resolve. |
+| DSP-805 ✅ | Final README and documentation update | Update `README.md` with complete build, flash, and test instructions. Ensure `doc/` is complete and all links resolve. |
 | DSP-806 | Tag v0.1.0 release | Create git tag `v0.1.0`. Write a short release note summarizing implemented endpoints, known limitations, and tested EDC versions. |
 
 **Acceptance Criteria:**
