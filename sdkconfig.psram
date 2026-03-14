@@ -1,0 +1,38 @@
+# sdkconfig.psram – Enable 8 MB OPI PSRAM for DSP-804
+#
+# Apply on top of sdkconfig.defaults (and optionally sdkconfig.wifi):
+#
+#   idf.py -DSDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.wifi;sdkconfig.psram" \
+#           build flash
+#
+# Hardware: ESP32-S3 (QFN56 rev 0.2) with 8 MB OPI PSRAM (AP_3v3).
+# The PSRAM is connected via the octal-SPI bus; QUAD mode will not detect it.
+
+# --- Enable PSRAM hardware ---
+CONFIG_SPIRAM=y
+
+# Octal-SPI mode required for the AP_3v3 / ESP32-S3-WROOM OPI PSRAM package
+CONFIG_SPIRAM_MODE_OCT=y
+
+# Auto-detect PSRAM type from chip ID (works for Espressif OPI PSRAM)
+CONFIG_SPIRAM_TYPE_AUTO=y
+
+# 80 MHz clock – safe operating point for OPI PSRAM at 3.3 V, 240 MHz CPU
+CONFIG_SPIRAM_SPEED_80M=y
+
+# Initialise PSRAM at boot so it is available to the heap allocator early
+CONFIG_SPIRAM_BOOT_INIT=y
+
+# Integrate PSRAM into the default heap: malloc() spills into PSRAM when
+# internal SRAM is exhausted, keeping the API surface unchanged.
+CONFIG_SPIRAM_USE_MALLOC=y
+
+# Do NOT ignore PSRAM detection failure – panic if the 8 MB OPI chip is
+# absent (guards against a mis-configured build being flashed to a board
+# without PSRAM).
+CONFIG_SPIRAM_IGNORE_NOTFOUND=n
+
+# --- DSP app flag ---
+# Enables PSRAM-aware log output in dsp_mem_report() and unlocks
+# dsp_mem_free_psram() which returns heap_caps_get_free_size(MALLOC_CAP_SPIRAM).
+CONFIG_DSP_PSRAM_ENABLE=y

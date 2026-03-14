@@ -2,11 +2,11 @@
 
 ## Current State
 
-**Last completed ticket:** DSP-803 – Flash-time provisioning tooling (tools/provision.py; flashed to device, verified)
-**Next ticket:** DSP-804 – PSRAM support
+**Last completed ticket:** DSP-804 – PSRAM support (sdkconfig.psram; 8MB OPI PSRAM verified on device; 52/52 integration tests pass)
+**Next ticket:** DSP-805 – Final README and documentation update
 **M5 validation status:** All ACs confirmed on ESP32-S3 (2026-03-13)
 **M7 validation status:** All ACs confirmed on ESP32-S3 (2026-03-14); 52/52 integration tests pass
-**M8 status:** DSP-801 ✅, DSP-802 ✅, DSP-803 ✅ (2026-03-14)
+**M8 status:** DSP-801 ✅, DSP-802 ✅, DSP-803 ✅, DSP-804 ✅ (2026-03-14)
 
 ## RAM Budget Summary (DSP-706)
 
@@ -113,6 +113,7 @@ dsp_embedded/
 ├── partitions.csv            # NVS, phy, factory, dsp_certs, storage (4 MB)
 ├── sdkconfig.defaults        # ESP32-S3 defaults, mbedTLS reduction
 ├── sdkconfig.wifi            # WiFi SSID/password overrides (gitignored)
+├── sdkconfig.psram           # 8MB OPI PSRAM config overlay (DSP-804)
 ├── AGENTS.md                 # Agent rules: commit per ticket, test all logic, etc.
 ├── target.md                 # DSP spec endpoint targets and budget constraints
 ├── .gitignore                # Excludes build/, sdkconfig, *.bin, human_to_do.md
