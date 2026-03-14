@@ -2,11 +2,11 @@
 
 ## Current State
 
-**Last completed ticket:** DSP-802 – Static analysis pass (0 findings ≥ medium; 2 false-positive style findings documented)
-**Next ticket:** DSP-803 – Flash-time provisioning tooling
+**Last completed ticket:** DSP-803 – Flash-time provisioning tooling (tools/provision.py; flashed to device, verified)
+**Next ticket:** DSP-804 – PSRAM support
 **M5 validation status:** All ACs confirmed on ESP32-S3 (2026-03-13)
 **M7 validation status:** All ACs confirmed on ESP32-S3 (2026-03-14); 52/52 integration tests pass
-**M8 status:** DSP-801 ✅, DSP-802 ✅ (2026-03-14)
+**M8 status:** DSP-801 ✅, DSP-802 ✅, DSP-803 ✅ (2026-03-14)
 
 ## RAM Budget Summary (DSP-706)
 
