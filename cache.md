@@ -2,9 +2,22 @@
 
 ## Current State
 
-**Last completed ticket:** DSP-705 – Deviation log finalized (7 entries, all with spec refs + rationale + impact)
-**Next ticket:** DSP-706 (M7 – RAM budget audit)
+**Last completed ticket:** DSP-706 – RAM budget audit (all 5 components within budget; doc/ram_budget.md written)
+**Next ticket:** None (all M7 tickets complete — DSP-701 through DSP-706 ✅)
 **M5 validation status:** All ACs confirmed on ESP32-S3 (2026-03-13)
+**M7 validation status:** All ACs confirmed on ESP32-S3 (2026-03-14); 52/52 integration tests pass
+
+## RAM Budget Summary (DSP-706)
+
+| Component | Measured | Budget | Status |
+|---|---|---|---|
+| TLS server context | 2.0 KB | ≤ 50 KB | ✅ PASS |
+| HTTP server | 11.3 KB | ≤ 20 KB | ✅ PASS |
+| DSP state machines | 0 KB (BSS) | ≤ 20 KB | ✅ PASS |
+| JSON parser (peak transient) | < 2 KB combined | ≤ 15 KB | ✅ PASS |
+| JWT processing (peak transient) | < 2 KB combined | ≤ 25 KB | ✅ PASS |
+
+Steady-state free heap: 246 KB. All-time min_free (post-test): 236 KB. 30 KB warning never triggered.
 
 ## Project Structure
 

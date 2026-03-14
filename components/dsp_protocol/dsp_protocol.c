@@ -12,6 +12,7 @@
 #include "dsp_catalog.h"
 #include "dsp_neg.h"
 #include "dsp_xfer.h"
+#include "dsp_mem.h"
 #include "esp_err.h"
 
 #include "esp_log.h"
@@ -64,6 +65,9 @@ static esp_err_t protocol_init(dsp_shared_t *sh)
         return ESP_ERR_INVALID_STATE;
     }
 
+    /* DSP-706: baseline heap before TLS allocation. */
+    dsp_mem_report("proto-before-tls");
+
     /* TLS: on host the mbedTLS back-end is absent so dsp_tls_server_init()
      * always returns ESP_FAIL.  Log a warning and continue so that other
      * protocol init paths can still be exercised by host unit tests. */
@@ -71,6 +75,9 @@ static esp_err_t protocol_init(dsp_shared_t *sh)
     if (err != ESP_OK) {
         ESP_LOGW(TAG, "TLS init returned 0x%x (expected on host)", err);
     }
+
+    /* DSP-706: delta = TLS context heap cost (budget: <=50 KB). */
+    dsp_mem_report("proto-after-tls");
 
     /* Catalog state machine. */
     err = dsp_catalog_init();
@@ -93,6 +100,9 @@ static esp_err_t protocol_init(dsp_shared_t *sh)
         return err;
     }
 
+    /* DSP-706: delta = catalog+neg+xfer SM heap cost (expected ~0, tables in BSS). */
+    dsp_mem_report("proto-after-state-machines");
+
     /* HTTP server: start before registering handlers so dynamic registration
      * works on live server instances.  On host this returns ESP_FAIL (no real
      * server); log a warning and continue so tests can verify all other init. */
@@ -100,6 +110,9 @@ static esp_err_t protocol_init(dsp_shared_t *sh)
     if (err != ESP_OK) {
         ESP_LOGW(TAG, "HTTP start returned 0x%x (expected on host)", err);
     }
+
+    /* DSP-706: delta = HTTP server heap cost (budget: <=20 KB). */
+    dsp_mem_report("proto-after-http");
 
     /* Register HTTP handlers for all DSP endpoints. */
     err = dsp_catalog_register_handler();
