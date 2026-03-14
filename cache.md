@@ -2,8 +2,8 @@
 
 ## Current State
 
-**Last completed ticket:** DSP-704 – Compatibility matrix filled (doc/compatibility_matrix.md)
-**Next ticket:** DSP-705 (M7 – Finalize deviation log)
+**Last completed ticket:** DSP-705 – Deviation log finalized (7 entries, all with spec refs + rationale + impact)
+**Next ticket:** DSP-706 (M7 – RAM budget audit)
 **M5 validation status:** All ACs confirmed on ESP32-S3 (2026-03-13)
 
 ## Project Structure
