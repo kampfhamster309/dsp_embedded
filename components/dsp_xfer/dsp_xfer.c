@@ -304,6 +304,51 @@ static esp_err_t xfer_start_post_handler(httpd_req_t *req)
 }
 
 /**
+ * POST /transfers/{id}/complete
+ *
+ * Advances the transfer to COMPLETED state and responds with a
+ * TransferCompletionMessage.  Returns 404 if the transfer is not found
+ * and 400 if the transfer is not in TRANSFERRING state.
+ *
+ * Registration note: uses trailing wildcard (POST /transfers/WILDCARD) because
+ * httpd_uri_match_wildcard only supports trailing wildcards.
+ * The exact "POST /transfers/start" handler takes priority for that path.
+ * extract_xfer_id() strips any trailing "/complete" from req->uri.
+ */
+static esp_err_t xfer_complete_post_handler(httpd_req_t *req)
+{
+    char id[DSP_XFER_PID_LEN];
+    extract_xfer_id(req->uri, id, sizeof(id));
+
+    if (id[0] == '\0') {
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "missing transfer id");
+        return ESP_FAIL;
+    }
+
+    int idx = dsp_xfer_find_by_pid(id);
+    if (idx < 0) {
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "transfer not found");
+        return ESP_FAIL;
+    }
+
+    if (dsp_xfer_get_state(idx) != DSP_XFER_STATE_TRANSFERRING) {
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST,
+                            "transfer not in TRANSFERRING state");
+        return ESP_FAIL;
+    }
+
+    dsp_xfer_apply(idx, DSP_XFER_EVENT_COMPLETE);
+
+    char resp[XFER_BUF_SIZE];
+    dsp_build_transfer_completion(resp, sizeof(resp), id);
+
+    httpd_resp_set_type(req, "application/json");
+    httpd_resp_sendstr(req, resp);
+    ESP_LOGI(TAG, "transfer completed: slot=%d pid=%s", idx, id);
+    return ESP_OK;
+}
+
+/**
  * GET /transfers/{id}
  *
  * Returns the current transfer state:
@@ -358,6 +403,14 @@ esp_err_t dsp_xfer_register_handlers(void)
                                      xfer_start_post_handler);
     if (err != ESP_OK) { return err; }
 
+    /* Trailing-wildcard POST handler covers /transfers/{id}/complete.
+     * Registered before GET so the method matcher differentiates them.
+     * The exact POST /transfers/start above takes priority for that path. */
+    err = dsp_http_register_handler("/transfers/*",
+                                     DSP_HTTP_POST,
+                                     xfer_complete_post_handler);
+    if (err != ESP_OK) { return err; }
+
     err = dsp_http_register_handler("/transfers/*",
                                      DSP_HTTP_GET,
                                      xfer_get_handler);
@@ -367,6 +420,12 @@ esp_err_t dsp_xfer_register_handlers(void)
 #else /* host build */
 
 static esp_err_t xfer_start_host_stub(void *req)
+{
+    (void)req;
+    return ESP_OK;
+}
+
+static esp_err_t xfer_complete_host_stub(void *req)
 {
     (void)req;
     return ESP_OK;
@@ -389,6 +448,11 @@ esp_err_t dsp_xfer_register_handlers(void)
     err = dsp_http_register_handler("/transfers/start",
                                      DSP_HTTP_POST,
                                      xfer_start_host_stub);
+    if (err != ESP_OK) { return err; }
+
+    err = dsp_http_register_handler("/transfers/*",
+                                     DSP_HTTP_POST,
+                                     xfer_complete_host_stub);
     if (err != ESP_OK) { return err; }
 
     err = dsp_http_register_handler("/transfers/*",

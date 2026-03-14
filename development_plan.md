@@ -174,7 +174,7 @@ Agent rules (AGENTS.md) apply throughout: git commit after every ticket, create 
 |--------|-------|-------------|
 | ✅ DSP-701 | Integration test: catalog fetch | Write an integration test that starts the EDC Docker container, queries `GET /catalog` on the DSP Embedded node (running on host build), and validates the response. |
 | ✅ DSP-702 | Integration test: negotiation flow | Integration test covering the full offer → agree sequence against the EDC connector. |
-| DSP-703 | Integration test: transfer flow | Integration test covering transfer start → status → completion against the EDC connector. |
+| ✅ DSP-703 | Integration test: transfer flow | Integration test covering transfer start → status → completion against the EDC connector. |
 | DSP-704 | Fill compatibility matrix | Run integration tests against each supported EDC version. Document results in `doc/compatibility_matrix.md`. |
 | DSP-705 | Finalize deviation log | Review all `deviation_log.md` entries. Ensure every deviation from the DSP spec has a rationale and a note on interoperability impact. |
 | DSP-706 | RAM budget audit | Run `dsp_mem_report()` in a full integration scenario. Verify all components are within their budgets from Milestone 1. Fix any overruns. |

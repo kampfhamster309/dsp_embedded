@@ -2,8 +2,8 @@
 
 ## Current State
 
-**Last completed ticket:** DSP-702 – Integration test: negotiation flow (18 tests, 1.65 s)
-**Next ticket:** DSP-703 (M7 – Integration test: transfer flow)
+**Last completed ticket:** DSP-703 – Integration test: transfer flow (20 tests, 2.11 s)
+**Next ticket:** DSP-704 (M7 – Fill compatibility matrix)
 **M5 validation status:** All ACs confirmed on ESP32-S3 (2026-03-13)
 
 ## Project Structure
@@ -163,18 +163,21 @@ dsp_embedded/
 
 ### M7 / Integration Testing (DSP-701–)
 
-- **Integration test layout**: `integration/` dir with `conftest.py` (fixtures), `test_701_catalog.py`, `test_702_negotiation.py`, `requirements.txt`, `pytest.ini`. Run with: `integration/.venv/bin/pytest integration/ --provider-url http://<device-ip> --counterpart-url http://localhost:18000 -v`
+- **Integration test layout**: `integration/` dir with `conftest.py` (fixtures), `test_701_catalog.py`, `test_702_negotiation.py`, `test_703_transfer.py`, `requirements.txt`, `pytest.ini`. Run with: `integration/.venv/bin/pytest integration/ --provider-url http://<device-ip> --counterpart-url http://localhost:18000 -v`
 - **Provider URL**: Device IP 192.168.178.107 (may change on DHCP reassignment). Check with boot log or router DHCP table. Env var: `PROVIDER_DSP_URL`.
-- **DSP counterpart**: `cd docker && docker compose up -d`. Healthy at `http://localhost:18000/health`. Control API at `/api/test/*`. Endpoints: `POST /api/test/catalog`, `POST /api/test/negotiate`, `POST /api/test/agree`, `POST /api/test/transfer`, `GET /api/test/negotiations`, `GET /api/test/transfers`.
+- **DSP counterpart**: `cd docker && docker compose up -d`. Healthy at `http://localhost:18000/health`. Control API at `/api/test/*`. Endpoints: `POST /api/test/catalog`, `POST /api/test/negotiate`, `POST /api/test/agree`, `POST /api/test/transfer`, `POST /api/test/transfer-complete`, `GET /api/test/negotiations`, `GET /api/test/transfers`.
 - **WiFi provisioning fix (main.c)**: `dsp_wifi_store_credentials()` requires NVS to be initialized first (done by `dsp_wifi_init()`). When `CONFIG_DSP_WIFI_PROVISION=y`, pass credentials directly via `dsp_wifi_config_t` to `dsp_wifi_init()`, then call `store_credentials()` after init to persist for subsequent boots. The old ordering (store before init) produced `0x1101` (NVS_NOT_INITIALIZED) and credentials were never written.
 - **Integration venv**: `python3 -m venv integration/.venv && integration/.venv/bin/pip install pytest httpx`. Venv is gitignored.
 - **DSP-701 result (2026-03-14)**: 14 tests passed in 1.86 s. GET /catalog validated `@type=dcat:Catalog`, `@context`, `dcat:dataset`, `dct:title`, `@id` fields.
 - **DSP-702 result (2026-03-14)**: 18 tests passed in 1.65 s. Full offer→agree state machine verified directly and via counterpart. Primary AC: final `GET /negotiations/{id}` returns `dspace:eventType=dspace:AGREED`.
-- **`httpd_uri_match_wildcard` limitation**: ONLY supports trailing wildcards (`*` at end of pattern). `/negotiations/*/agree` with `*` in the middle NEVER matches anything. Fix: register agree handler as `POST /negotiations/*` (trailing wildcard) — `extract_neg_id()` already strips any `/agree` suffix from `req->uri`. Registration order ensures `POST /negotiations/offers` (exact) matches first for that specific path.
-- **Negotiation slot exhaustion**: `DSP_NEG_MAX=4` and slots are never freed during a session. Integration tests MUST use module-scoped fixtures that run the flow once and cache results. Never create one negotiation per test (10 tests × 1 slot = out of table).
-- **DSP negotiation message field**: Device's `offers_post_handler` reads `dspace:processId` (not `dspace:consumerPid`) from the incoming `ContractOfferMessage`. Counterpart's make_offer_body must send `"dspace:processId": "urn:uuid:{consumer_pid}"`.
+- **DSP-703 result (2026-03-14)**: 20 tests passed in 2.11 s. Full start→status→complete verified directly and via counterpart. Primary AC: final `GET /transfers/{id}` returns `@type=dspace:TransferCompletionMessage`. Full suite: 52 tests, 3.81 s.
+- **`httpd_uri_match_wildcard` limitation**: ONLY supports trailing wildcards (`*` at end of pattern). `/negotiations/*/agree` with `*` in the middle NEVER matches anything. Fix: register agree handler as `POST /negotiations/*` (trailing wildcard) — `extract_neg_id()` already strips any `/agree` suffix from `req->uri`. Same applies to transfer: `POST /transfers/*` covers `/transfers/{id}/complete`, with `POST /transfers/start` exact registered first. Registration order determines priority.
+- **Slot exhaustion**: `DSP_NEG_MAX=4`, `DSP_XFER_MAX=2`, slots never freed during session. Full suite (DSP-701–703) uses exactly 4 neg slots (2 per test_702, 2 per test_703) and 2 xfer slots (1 per test_703 fixture). Device must be reset before each full suite run.
+- **DSP negotiation message field**: Device reads `dspace:processId` (NOT `dspace:consumerPid`) from incoming `ContractOfferMessage`. Same field in `TransferRequestMessage`. Must include `urn:uuid:` prefix.
 - **DSP negotiation state field**: `GET /negotiations/{id}` and all negotiation event responses use `dspace:eventType` (NOT `dsp:state`) for the state value. Values: `dspace:OFFERED`, `dspace:AGREED`, etc.
-- **Device does NOT send callbacks after agree**: When `POST /negotiations/{id}/agree` succeeds, the device does NOT call the consumer's `callbackAddress`. The counterpart's `/api/test/agree` endpoint manually sets `negotiations[consumer_pid]["state"] = "AGREED"` after confirming the device responded with `dspace:eventType=dspace:AGREED`.
+- **Transfer `@context` must be STRING**: `dsp_msg_validate_transfer_request()` uses `cJSON_IsString()` for `@context` — rejects arrays. Send `"@context": "https://w3id.org/dspace/2024/1/context.json"` (plain string). The negotiation offer validator handles arrays differently.
+- **Transfer requires AGREED negotiation**: `POST /transfers/start` checks `dsp_neg_find_by_cpid(pid)` must find a slot in `DSP_NEG_STATE_AGREED`. The processId in TransferRequestMessage must match an AGREED negotiation's processId.
+- **Device does NOT send callbacks**: No callbacks after agree or transfer events. Counterpart endpoints manually update their internal state after confirming the device responded correctly.
 
 ### ESP32-S3 Board / Serial Capture
 

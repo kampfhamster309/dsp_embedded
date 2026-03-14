@@ -253,10 +253,15 @@ async def test_start_negotiation(request: Request):
 async def test_start_transfer(request: Request):
     """
     Start a data transfer with the DSP Embedded provider.
+
+    The device (provider) reads dspace:processId to identify the transfer and
+    requires dspace:dataset for validation.  The consumer_pid must match a
+    negotiation that is already in AGREED state on the device.
+
     Body: {
         "provider_url": "http://...",   (optional)
-        "agreement_id": "...",
-        "asset_id": "sensor-data-01"
+        "consumer_pid": "<uuid>",       (must match an AGREED negotiation)
+        "asset_id": "sensor-data-01"    (optional)
     }
     """
     body: dict[str, Any] = {}
@@ -266,20 +271,16 @@ async def test_start_transfer(request: Request):
         pass
 
     provider_url = body.get("provider_url", PROVIDER_DSP_URL)
-    agreement_id = body.get("agreement_id", str(uuid.uuid4()))
     asset_id = body.get("asset_id", "sensor-data-01")
-    consumer_pid = str(uuid.uuid4())
+    consumer_pid = body.get("consumer_pid", str(uuid.uuid4()))
 
     transfer_body = {
-        "@context": dsp_context(),
+        # Device validator uses cJSON_IsString for @context; must be a plain
+        # string (not an array like negotiate/offer uses).
+        "@context": "https://w3id.org/dspace/2024/1/context.json",
         "@type": "dspace:TransferRequestMessage",
-        "dspace:consumerPid": f"urn:uuid:{consumer_pid}",
-        "dspace:agreementId": agreement_id,
-        "dct:format": "HttpData-PULL",
-        "dspace:dataAddress": {
-            "@type": "dspace:DataAddress",
-            "dspace:endpointType": "https://w3id.org/idsa/v4.1/HTTP",
-        },
+        "dspace:processId": f"urn:uuid:{consumer_pid}",
+        "dspace:dataset": asset_id,
         "dspace:callbackAddress": "http://dsp-counterpart:8000/callback",
     }
 
@@ -297,6 +298,7 @@ async def test_start_transfer(request: Request):
         try:
             resp = await client.post(target, json=transfer_body)
             resp.raise_for_status()
+            # Device does not push a callback; update counterpart state manually.
             transfers[consumer_pid]["state"] = "STARTED"
             result = resp.json()
             log.info("Transfer started: %s", result)
@@ -310,6 +312,56 @@ async def test_start_transfer(request: Request):
             raise HTTPException(status_code=exc.response.status_code, detail=str(exc))
         except Exception as exc:
             transfers[consumer_pid]["state"] = "FAILED"
+            raise HTTPException(status_code=502, detail=f"Provider unreachable: {exc}")
+
+
+@app.post("/api/test/transfer-complete")
+async def test_complete_transfer(request: Request):
+    """
+    Send a transfer completion signal to the DSP Embedded provider.
+
+    The device does not push callbacks on completion, so this endpoint
+    manually records COMPLETED on the counterpart side after the device
+    confirms the transition.
+
+    Body: {
+        "provider_url": "http://...",  (optional)
+        "consumer_pid": "<uuid>",      (the processId used in the transfer start)
+    }
+    """
+    body: dict[str, Any] = {}
+    try:
+        body = await request.json()
+    except Exception:
+        pass
+
+    provider_url = body.get("provider_url", PROVIDER_DSP_URL)
+    consumer_pid = body.get("consumer_pid")
+    if not consumer_pid:
+        raise HTTPException(status_code=400, detail="consumer_pid is required")
+
+    xfer_id = consumer_pid if consumer_pid.startswith("urn:uuid:") else f"urn:uuid:{consumer_pid}"
+    target = f"{provider_url}/transfers/{xfer_id}/complete"
+    log.info("Sending transfer complete to %s (consumer_pid=%s)", target, consumer_pid)
+
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        try:
+            resp = await client.post(target, content=b"", headers={"Content-Type": "application/json"})
+            resp.raise_for_status()
+            result = resp.json()
+            # Device does not push a callback; update counterpart state manually.
+            lookup_key = consumer_pid.removeprefix("urn:uuid:")
+            if lookup_key in transfers:
+                transfers[lookup_key]["state"] = "COMPLETED"
+            log.info("Transfer completed on provider: %s", result.get("@type"))
+            return {
+                "consumer_pid": consumer_pid,
+                "transfer": transfers.get(lookup_key),
+                "provider_response": result,
+            }
+        except httpx.HTTPStatusError as exc:
+            raise HTTPException(status_code=exc.response.status_code, detail=str(exc))
+        except Exception as exc:
             raise HTTPException(status_code=502, detail=f"Provider unreachable: {exc}")
 
 
