@@ -47,7 +47,7 @@ dsp_embedded/
 │   ├── dsp_application/     # Core 1 task: ADC stub polling → ring buffer (DSP-503)
 │   ├── dsp_rtc_state/       # RTC slow-memory persistence: neg+xfer state across deep sleep (DSP-505)
 │   └── dsp_power/           # Deep sleep entry: save RTC state → stop HTTP → esp_deep_sleep_start (DSP-601)
-├── test/
+├── test/                     # Host-native unit tests (Unity, CMake)
 │   ├── CMakeLists.txt        # Host-native standalone CMake project
 │   ├── test_main.c           # Unity runner: UNITY_BEGIN/END + RUN_TEST calls
 │   ├── test_smoke.c          # 15 smoke tests (pipeline + dsp_config defaults)
@@ -56,33 +56,47 @@ dsp_embedded/
 │   ├── test_dsp_tls_tickets.c # 6 tests: session tickets ENABLED path (DSP-103)
 │   ├── test_tickets_off.c    # 7 tests: session tickets DISABLED path (DSP-103)
 │   ├── test_dsp_mem.c        # 16 host-native tests for dsp_mem (DSP-104)
-│   ├── test_dsp_wifi.c      # 32 host-native tests for dsp_wifi SM + stubs (DSP-105)
-│   ├── test_dsp_identity.c  # 20 host-native tests for dsp_identity (DSP-201)
-│   ├── test_dsp_jwt.c       # 34+9 host-native tests for dsp_jwt (DSP-202/203)
-│   ├── test_dsp_psk.c       # 27 host-native tests for dsp_psk (DSP-204)
-│   ├── test_dsp_daps.c      # 17 host-native tests for dsp_daps (DSP-205)
-│   ├── test_dsp_json.c      # 24 host-native tests for dsp_json (DSP-301)
-│   ├── test_dsp_jsonld.c    # 21 host-native tests for dsp_jsonld_ctx.h (DSP-302)
-│   ├── test_dsp_msg.c       # 31 host-native tests for dsp_msg validators (DSP-303)
-│   ├── test_dsp_build.c     # 36 host-native tests for dsp_build builders (DSP-304)
-│   ├── test_dsp_catalog.c   # 18 host-native tests for dsp_catalog (DSP-401)
-│   ├── test_dsp_neg.c       # 37 host-native tests for dsp_neg SM + slots (DSP-402)
-│   ├── test_dsp_protocol.c  # host-native tests for dsp_protocol init/lifecycle (DSP-502)
+│   ├── test_dsp_wifi.c       # 32 host-native tests for dsp_wifi SM + stubs (DSP-105)
+│   ├── test_dsp_identity.c   # 20 host-native tests for dsp_identity (DSP-201)
+│   ├── test_dsp_jwt.c        # 34+9 host-native tests for dsp_jwt (DSP-202/203)
+│   ├── test_dsp_psk.c        # 27 host-native tests for dsp_psk (DSP-204)
+│   ├── test_dsp_daps.c       # 17 host-native tests for dsp_daps (DSP-205)
+│   ├── test_dsp_json.c       # 24 host-native tests for dsp_json (DSP-301)
+│   ├── test_dsp_jsonld.c     # 21 host-native tests for dsp_jsonld_ctx.h (DSP-302)
+│   ├── test_dsp_msg.c        # 31 host-native tests for dsp_msg validators (DSP-303)
+│   ├── test_dsp_build.c      # 36 host-native tests for dsp_build builders (DSP-304)
+│   ├── test_dsp_catalog.c    # 18 host-native tests for dsp_catalog (DSP-401)
+│   ├── test_dsp_neg.c        # 37 host-native tests for dsp_neg SM + slots (DSP-402)
+│   ├── test_dsp_xfer.c       # host-native tests for dsp_xfer SM + slots (DSP-405)
+│   ├── test_dsp_protocol.c   # host-native tests for dsp_protocol init/lifecycle (DSP-502)
 │   ├── test_dsp_application.c # 15 host-native tests for dsp_application (DSP-503)
-│   ├── test_dsp_ring_buf.c  # 14 host-native tests: drain, overflow, wrap-around (DSP-504)
-│   ├── test_dsp_rtc_state.c # 23 host-native tests: sizes, round-trip, load_slot (DSP-505)
-│   ├── test_dsp_power.c     # 1 host-native test: flag disabled by default (DSP-601)
-│   ├── test_dsp_power_on.c  # 19 host-native tests: enter_deep_sleep + handle_wakeup (DSP-601/602)
-│   ├── test_dsp_power_on_main.c # Unity runner for dsp_test_deep_sleep_on binary (DSP-601/602)
-│   └── test_tickets_off_main.c # Unity runner for dsp_test_no_tickets binary
+│   ├── test_dsp_ring_buf.c   # 14 host-native tests: drain, overflow, wrap-around (DSP-504)
+│   ├── test_dsp_rtc_state.c  # 23 host-native tests: sizes, round-trip, load_slot (DSP-505)
+│   ├── test_dsp_power.c      # 1 host-native test: flag disabled by default (DSP-601)
+│   ├── test_dsp_power_on.c   # 19 host-native tests: enter_deep_sleep + handle_wakeup (DSP-601/602)
+│   ├── test_dsp_power_on_main.c # Unity runner for dsp_test_deep_sleep_on binary
+│   ├── test_tickets_off_main.c  # Unity runner for dsp_test_no_tickets binary
+│   ├── test_catalog_request_on.c / _main.c  # Feature-flag variant tests
+│   ├── test_psk_on.c / _main.c              # PSK enabled variant tests
+│   ├── test_terminate_on.c / _main.c        # Terminate-enabled variant tests
 │   ├── unity/                # git submodule: ThrowTheSwitch/Unity v2.6.0
 │   └── stubs/                # ESP-IDF header shims for host builds
 │       ├── esp_log.h         # ESP_LOG* → fprintf
 │       ├── esp_err.h         # esp_err_t, ESP_OK/FAIL
 │       └── freertos/         # FreeRTOS type stubs
+├── integration/              # M7 pytest integration tests (run against live device)
+│   ├── pytest.ini            # Marks provider/counterpart URL options
+│   ├── conftest.py           # Fixtures: provider_url, counterpart_url, require_provider
+│   ├── requirements.txt      # pytest, httpx, anyio
+│   ├── test_701_catalog.py   # 14 tests: GET /catalog (DSP-701)
+│   ├── test_702_negotiation.py # 18 tests: POST offers → agree flow (DSP-702)
+│   ├── test_703_transfer.py  # 20 tests: transfer start → status → complete (DSP-703)
+│   └── .venv/                # Python virtualenv (gitignored)
 ├── doc/
-│   ├── deviation_log.md      # DEV-001, DEV-002, DEV-003 documented
-│   └── compatibility_matrix.md  # Stub, filled in M7
+│   ├── deviation_log.md      # DEV-001–DEV-007: all spec deviations with rationale + impact
+│   ├── compatibility_matrix.md # M7: Python mock ✅, Tractus-X EDC UNTESTED
+│   ├── ram_budget.md         # M7 DSP-706: measured heap per component vs budget
+│   └── power_measurement.md  # DSP-604 procedure (hardware measurement pending)
 ├── docker/
 │   ├── docker-compose.yml    # dsp-counterpart service on port 18000
 │   ├── dsp-counterpart/      # Python/FastAPI DSP consumer mock
@@ -92,10 +106,14 @@ dsp_embedded/
 │   ├── certs/                # Local test certs (gitignored, *.pem)
 │   └── seed/
 │       └── seed-test-data.sh # Health check + catalog probe
-├── tools/                    # Empty – provisioning scripts added in M8
+├── tools/
+│   └── gen_dev_certs.sh      # Generates device_cert.der + device_key.der (ECDSA P-256)
 ├── CMakeLists.txt            # Top-level ESP-IDF project file
 ├── partitions.csv            # NVS, phy, factory, dsp_certs, storage (4 MB)
-├── sdkconfig.defaults        # ESP32-S3 defaults, mbedTLS reduction stubs
+├── sdkconfig.defaults        # ESP32-S3 defaults, mbedTLS reduction
+├── sdkconfig.wifi            # WiFi SSID/password overrides (gitignored)
+├── AGENTS.md                 # Agent rules: commit per ticket, test all logic, etc.
+├── target.md                 # DSP spec endpoint targets and budget constraints
 ├── .gitignore                # Excludes build/, sdkconfig, *.bin, human_to_do.md
 └── README.md
 ```
