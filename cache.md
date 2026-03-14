@@ -2,8 +2,8 @@
 
 ## Current State
 
-**Last completed ticket:** DSP-701 – Integration test: catalog fetch (14 tests, 1.86 s)
-**Next ticket:** DSP-702 (M7 – Integration test: negotiation flow)
+**Last completed ticket:** DSP-702 – Integration test: negotiation flow (18 tests, 1.65 s)
+**Next ticket:** DSP-703 (M7 – Integration test: transfer flow)
 **M5 validation status:** All ACs confirmed on ESP32-S3 (2026-03-13)
 
 ## Project Structure
@@ -106,7 +106,7 @@ dsp_embedded/
 - **dsp_wifi reconnect**: `esp_timer` one-shot fires after `CONFIG_DSP_WIFI_RECONNECT_DELAY_MS` ms, calls `esp_wifi_connect()` + `DSP_WIFI_INPUT_RETRY`. Host stub: `init()` returns ESP_OK, `connect()` returns ESP_FAIL.
 - **dsp_mem_report(tag)**: call before/after component init to measure per-component RAM impact. On ESP_PLATFORM uses `heap_caps_get_free_size(MALLOC_CAP_INTERNAL)`, warns if < 30 KB free. On host returns fixed sentinel `DSP_MEM_HOST_FREE_B = 512 KB`. Called at "boot" in `app_main()`.
 - **DSP-103 two-binary strategy**: compile-time flags can't be tested in one binary. `dsp_test_runner` has `CONFIG_DSP_TLS_SESSION_TICKETS=1` (default). `dsp_test_no_tickets` compiles with `-DCONFIG_DSP_TLS_SESSION_TICKETS=0` and verifies the disabled path. Both registered in CTest. Run with: `ctest --test-dir test/build`
-- **dsp_http**: wraps `esp_http_server`; exposes `dsp_http_start(port)`, `dsp_http_stop()`, `dsp_http_register_handler(uri, method, fn)`, `dsp_http_is_running()`. Handler bridge uses `httpd_req_t::user_ctx` so a single `bridge_handler()` serves all routes. Server config: stack=4096, max_open_sockets=4, lru_purge_enable=true. Host `#else` stub preserves route table in static array (no real server) for test verification.
+- **dsp_http**: wraps `esp_http_server`; exposes `dsp_http_start(port)`, `dsp_http_stop()`, `dsp_http_register_handler(uri, method, fn)`, `dsp_http_is_running()`. Handler bridge uses `httpd_req_t::user_ctx` so a single `bridge_handler()` serves all routes. Server config: **stack=8192** (must be ≥8192 — POST handlers with two 1 KB stack buffers + cJSON overhead overflow at 4096), max_open_sockets=4, lru_purge_enable=true. Host `#else` stub preserves route table in static array (no real server) for test verification.
 - **dsp_http method mapping**: `DSP_HTTP_{GET,POST,PUT,DELETE}` are DSP-internal enum values (0–3); mapped to ESP-IDF `HTTP_GET=1, HTTP_POST=3, HTTP_PUT=4, HTTP_DELETE=0` via `map_method()` in the ESP_PLATFORM block.
 - **dsp_tls host stubs**: `dsp_tls.c` has an `#else` branch (no ESP_PLATFORM) providing `dsp_tls_server_init` (returns ESP_FAIL) and `dsp_tls_server_deinit`. `dsp_tls.h` requires `<stdbool.h>` and `<stddef.h>` (host-compatibility fixes applied in DSP-101).
 - `test/build/` is gitignored; `test/test_main.c` is tracked (replaced by Unity runner in DSP-004)
@@ -163,12 +163,18 @@ dsp_embedded/
 
 ### M7 / Integration Testing (DSP-701–)
 
-- **Integration test layout**: `integration/` dir with `conftest.py` (fixtures), `test_701_catalog.py`, `requirements.txt`, `pytest.ini`. Run with: `integration/.venv/bin/pytest integration/ --provider-url http://<device-ip> --counterpart-url http://localhost:18000 -v`
+- **Integration test layout**: `integration/` dir with `conftest.py` (fixtures), `test_701_catalog.py`, `test_702_negotiation.py`, `requirements.txt`, `pytest.ini`. Run with: `integration/.venv/bin/pytest integration/ --provider-url http://<device-ip> --counterpart-url http://localhost:18000 -v`
 - **Provider URL**: Device IP 192.168.178.107 (may change on DHCP reassignment). Check with boot log or router DHCP table. Env var: `PROVIDER_DSP_URL`.
-- **DSP counterpart**: `cd docker && docker compose up -d`. Healthy at `http://localhost:18000/health`. Control API at `/api/test/*`.
+- **DSP counterpart**: `cd docker && docker compose up -d`. Healthy at `http://localhost:18000/health`. Control API at `/api/test/*`. Endpoints: `POST /api/test/catalog`, `POST /api/test/negotiate`, `POST /api/test/agree`, `POST /api/test/transfer`, `GET /api/test/negotiations`, `GET /api/test/transfers`.
 - **WiFi provisioning fix (main.c)**: `dsp_wifi_store_credentials()` requires NVS to be initialized first (done by `dsp_wifi_init()`). When `CONFIG_DSP_WIFI_PROVISION=y`, pass credentials directly via `dsp_wifi_config_t` to `dsp_wifi_init()`, then call `store_credentials()` after init to persist for subsequent boots. The old ordering (store before init) produced `0x1101` (NVS_NOT_INITIALIZED) and credentials were never written.
 - **Integration venv**: `python3 -m venv integration/.venv && integration/.venv/bin/pip install pytest httpx`. Venv is gitignored.
-- **DSP-701 result (2026-03-14)**: 14 tests passed in 1.86 s against device at 192.168.178.107. Both direct and counterpart-proxied `GET /catalog` validated `@type=dcat:Catalog`, `@context`, `dcat:dataset`, `dct:title`, and `@id` fields.
+- **DSP-701 result (2026-03-14)**: 14 tests passed in 1.86 s. GET /catalog validated `@type=dcat:Catalog`, `@context`, `dcat:dataset`, `dct:title`, `@id` fields.
+- **DSP-702 result (2026-03-14)**: 18 tests passed in 1.65 s. Full offer→agree state machine verified directly and via counterpart. Primary AC: final `GET /negotiations/{id}` returns `dspace:eventType=dspace:AGREED`.
+- **`httpd_uri_match_wildcard` limitation**: ONLY supports trailing wildcards (`*` at end of pattern). `/negotiations/*/agree` with `*` in the middle NEVER matches anything. Fix: register agree handler as `POST /negotiations/*` (trailing wildcard) — `extract_neg_id()` already strips any `/agree` suffix from `req->uri`. Registration order ensures `POST /negotiations/offers` (exact) matches first for that specific path.
+- **Negotiation slot exhaustion**: `DSP_NEG_MAX=4` and slots are never freed during a session. Integration tests MUST use module-scoped fixtures that run the flow once and cache results. Never create one negotiation per test (10 tests × 1 slot = out of table).
+- **DSP negotiation message field**: Device's `offers_post_handler` reads `dspace:processId` (not `dspace:consumerPid`) from the incoming `ContractOfferMessage`. Counterpart's make_offer_body must send `"dspace:processId": "urn:uuid:{consumer_pid}"`.
+- **DSP negotiation state field**: `GET /negotiations/{id}` and all negotiation event responses use `dspace:eventType` (NOT `dsp:state`) for the state value. Values: `dspace:OFFERED`, `dspace:AGREED`, etc.
+- **Device does NOT send callbacks after agree**: When `POST /negotiations/{id}/agree` succeeds, the device does NOT call the consumer's `callbackAddress`. The counterpart's `/api/test/agree` endpoint manually sets `negotiations[consumer_pid]["state"] = "AGREED"` after confirming the device responded with `dspace:eventType=dspace:AGREED`.
 
 ### ESP32-S3 Board / Serial Capture
 
