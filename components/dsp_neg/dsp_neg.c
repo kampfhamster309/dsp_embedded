@@ -440,7 +440,12 @@ esp_err_t dsp_neg_register_handlers(void)
                                      offers_post_handler);
     if (err != ESP_OK) { return err; }
 
-    err = dsp_http_register_handler("/negotiations/*/agree",
+    /* httpd_uri_match_wildcard only supports trailing wildcard.  Use
+     * "/negotiations/" plus the trailing wildcard to cover both
+     * "/negotiations/{id}/agree" and "/negotiations/{id}".  The exact
+     * "POST /negotiations/offers" handler (above) takes priority.
+     * extract_neg_id() strips any trailing "/agree" from req->uri. */
+    err = dsp_http_register_handler("/negotiations/*",
                                      DSP_HTTP_POST,
                                      agree_post_handler);
     if (err != ESP_OK) { return err; }
@@ -499,7 +504,7 @@ esp_err_t dsp_neg_register_handlers(void)
                                      neg_offers_host_stub);
     if (err != ESP_OK) { return err; }
 
-    err = dsp_http_register_handler("/negotiations/*/agree",
+    err = dsp_http_register_handler("/negotiations/*",
                                      DSP_HTTP_POST,
                                      neg_agree_host_stub);
     if (err != ESP_OK) { return err; }

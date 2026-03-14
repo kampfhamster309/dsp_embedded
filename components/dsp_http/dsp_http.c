@@ -91,7 +91,7 @@ esp_err_t dsp_http_start(uint16_t port)
 
     httpd_config_t cfg = HTTPD_DEFAULT_CONFIG();
     cfg.server_port      = port;
-    cfg.stack_size       = 4096;          /* keeps server task ≤4 KB stack  */
+    cfg.stack_size       = 8192;          /* POST handlers with 1 KB body buffers need >4 KB */
     cfg.max_open_sockets = 4;             /* max concurrent connections      */
     cfg.max_uri_handlers = DSP_HTTP_MAX_ROUTES;
     cfg.lru_purge_enable = true;          /* close LRU socket when table full */

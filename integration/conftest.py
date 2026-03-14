@@ -17,6 +17,7 @@ Start it with:  cd docker && docker compose up -d
 
 import os
 import time
+import uuid
 
 import httpx
 import pytest
@@ -76,6 +77,12 @@ def require_counterpart(counterpart_url):
         f"Start it with: cd docker && docker compose up -d  "
         f"(last error: {last_exc})"
     )
+
+
+@pytest.fixture
+def unique_pid() -> str:
+    """A fresh UUID string (without urn:uuid: prefix) for each test."""
+    return str(uuid.uuid4())
 
 
 @pytest.fixture(scope="session", autouse=True)

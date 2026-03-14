@@ -41,12 +41,18 @@ def dsp_context() -> list[str]:
     ]
 
 
-def make_offer_body(asset_id: str, policy_id: str, provider_id: str) -> dict:
-    """Build a DSP-compliant ContractOffer message to send to the provider."""
+def make_offer_body(asset_id: str, policy_id: str, provider_id: str,
+                    consumer_pid: str) -> dict:
+    """Build a DSP-compliant ContractOfferMessage to send to the provider.
+
+    The device (provider) reads dspace:processId to identify the negotiation.
+    We use the consumer_pid as the processId so we can later look it up by
+    the same key in GET /negotiations/{consumer_pid} and POST /negotiations/{consumer_pid}/agree.
+    """
     return {
         "@context": dsp_context(),
         "@type": "dspace:ContractOfferMessage",
-        "dspace:providerPid": f"urn:uuid:{uuid.uuid4()}",
+        "dspace:processId": f"urn:uuid:{consumer_pid}",
         "dspace:offer": {
             "@type": "odrl:Offer",
             "@id": f"urn:uuid:{policy_id}",
@@ -70,7 +76,7 @@ def make_offer_body(asset_id: str, policy_id: str, provider_id: str) -> dict:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     log.info("DSP Counterpart started – listening on :8000")
-    log.info("Management API: GET /health, POST /api/test/catalog, POST /api/test/negotiate")
+    log.info("Management API: GET /health, POST /api/test/catalog, POST /api/test/negotiate, POST /api/test/agree")
     yield
     log.info("DSP Counterpart shutting down")
 
@@ -211,8 +217,7 @@ async def test_start_negotiation(request: Request):
     provider_id = body.get("provider_id", "urn:connector:dsp-embedded")
 
     consumer_pid = str(uuid.uuid4())
-    offer_body = make_offer_body(asset_id, policy_id, provider_id)
-    offer_body["dspace:consumerPid"] = f"urn:uuid:{consumer_pid}"
+    offer_body = make_offer_body(asset_id, policy_id, provider_id, consumer_pid)
 
     negotiations[consumer_pid] = {
         "consumer_pid": consumer_pid,
@@ -305,6 +310,58 @@ async def test_start_transfer(request: Request):
             raise HTTPException(status_code=exc.response.status_code, detail=str(exc))
         except Exception as exc:
             transfers[consumer_pid]["state"] = "FAILED"
+            raise HTTPException(status_code=502, detail=f"Provider unreachable: {exc}")
+
+
+@app.post("/api/test/agree")
+async def test_send_agreement(request: Request):
+    """
+    Send an agreement (agree) to the DSP Embedded provider for an existing negotiation.
+
+    The device does not send callbacks when the agree endpoint is called, so
+    this endpoint manually records the AGREED state on the counterpart side
+    after confirming the device transitioned successfully.
+
+    Body: {
+        "provider_url": "http://...",  (optional)
+        "consumer_pid": "<uuid>",      (the processId sent in the offer)
+    }
+    """
+    body: dict[str, Any] = {}
+    try:
+        body = await request.json()
+    except Exception:
+        pass
+
+    provider_url = body.get("provider_url", PROVIDER_DSP_URL)
+    consumer_pid = body.get("consumer_pid")
+    if not consumer_pid:
+        raise HTTPException(status_code=400, detail="consumer_pid is required")
+
+    # The device uses urn:uuid:<consumer_pid> as the negotiation key.
+    # The agree URI must include the full urn:uuid: prefix.
+    neg_id = consumer_pid if consumer_pid.startswith("urn:uuid:") else f"urn:uuid:{consumer_pid}"
+    target = f"{provider_url}/negotiations/{neg_id}/agree"
+    log.info("Sending agree to %s (consumer_pid=%s)", target, consumer_pid)
+
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        try:
+            resp = await client.post(target, content=b"", headers={"Content-Type": "application/json"})
+            resp.raise_for_status()
+            result = resp.json()
+            # Device does not push a callback; update counterpart state manually.
+            lookup_key = consumer_pid.removeprefix("urn:uuid:")
+            if lookup_key in negotiations:
+                negotiations[lookup_key]["state"] = "AGREED"
+            log.info("Agreement accepted by provider: %s", result.get("dspace:eventType"))
+            return {
+                "consumer_pid": consumer_pid,
+                "negotiation": negotiations.get(lookup_key),
+                "provider_response": result,
+            }
+        except httpx.HTTPStatusError as exc:
+            raise HTTPException(status_code=exc.response.status_code, detail=str(exc))
+        except Exception as exc:
             raise HTTPException(status_code=502, detail=f"Provider unreachable: {exc}")
 
 
