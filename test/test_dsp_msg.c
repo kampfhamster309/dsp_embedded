@@ -379,3 +379,17 @@ void test_msg_catalog_request_rejected_by_offer_validator(void)
     TEST_ASSERT_EQUAL(DSP_MSG_ERR_WRONG_TYPE,
                       dsp_msg_validate_offer(s_cat_req_valid));
 }
+
+/* -------------------------------------------------------------------------
+ * DSP-801: coverage addition – empty-string @context (Phase 2 check)
+ * ------------------------------------------------------------------------- */
+
+void test_msg_common_context_empty_string_returns_missing_context(void)
+{
+    /* @context present as "" passes cJSON_IsString() (Phase 1) but
+     * fails the valuestring[0] == '\0' guard (Phase 2) → MISSING_CONTEXT */
+    const char *body =
+        "{\"@context\":\"\",\"@type\":\"dspace:CatalogRequestMessage\"}";
+    TEST_ASSERT_EQUAL(DSP_MSG_ERR_MISSING_CONTEXT,
+                      dsp_msg_validate_catalog_request(body));
+}

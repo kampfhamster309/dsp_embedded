@@ -182,6 +182,45 @@ void test_jwt_b64url_decode_insufficient_cap_returns_negative(void)
     TEST_ASSERT_LESS_THAN(0, result);
 }
 
+/* DSP-801: cover b64url_char_to_val() branches for '-', '_', and invalid */
+
+void test_jwt_b64url_decode_url_safe_minus_char(void)
+{
+    /* '-' maps to value 62.  "+" in standard base64 becomes "-" in base64url.
+     * ">" (ASCII 62) is value 62 in standard base64; base64url uses "-".
+     * Two-char group "-A" (62, 0): output byte = (62<<2)|(0>>4) = 248 = 0xF8. */
+    uint8_t buf[4];
+    int len = dsp_jwt_base64url_decode("-A", 2, buf, sizeof(buf));
+    TEST_ASSERT_EQUAL(1, len);
+    TEST_ASSERT_EQUAL(0xF8, buf[0]);
+}
+
+void test_jwt_b64url_decode_url_safe_underscore_char(void)
+{
+    /* '_' maps to value 63.  Two-char group "_w" (63, 48):
+     * output byte = (63<<2)|(48>>4) = 252|3 = 255 = 0xFF. */
+    uint8_t buf[4];
+    int len = dsp_jwt_base64url_decode("_w", 2, buf, sizeof(buf));
+    TEST_ASSERT_EQUAL(1, len);
+    TEST_ASSERT_EQUAL(0xFF, buf[0]);
+}
+
+void test_jwt_b64url_decode_invalid_char_returns_negative(void)
+{
+    /* '!' is not in the base64url alphabet → decode returns -1. */
+    uint8_t buf[4];
+    int result = dsp_jwt_base64url_decode("AB!D", 4, buf, sizeof(buf));
+    TEST_ASSERT_LESS_THAN(0, result);
+}
+
+void test_jwt_b64url_decode_single_char_is_invalid(void)
+{
+    /* A single trailing character (rem == 1) is not valid base64url. */
+    uint8_t buf[4];
+    int result = dsp_jwt_base64url_decode("A", 1, buf, sizeof(buf));
+    TEST_ASSERT_LESS_THAN(0, result);
+}
+
 /* -------------------------------------------------------------------------
  * dsp_jwt_parse_alg() tests
  * ------------------------------------------------------------------------- */

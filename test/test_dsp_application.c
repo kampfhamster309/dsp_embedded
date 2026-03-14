@@ -14,6 +14,7 @@
 #include "dsp_application.h"
 #include "dsp_shared.h"
 #include "esp_err.h"
+#include <string.h>
 
 /* setUp / tearDown defined once in test_smoke.c. */
 
@@ -167,4 +168,29 @@ void test_application_task_core_is_one(void)
 void test_application_task_stack_at_least_4096(void)
 {
     TEST_ASSERT_GREATER_OR_EQUAL(4096u, DSP_APPLICATION_TASK_STACK);
+}
+
+/* -------------------------------------------------------------------------
+ * DSP-801: ring buffer full → drop path
+ * ------------------------------------------------------------------------- */
+
+void test_application_ring_buf_full_drops_sample(void)
+{
+    /* Fill the ring buffer to capacity using the public push API, then
+     * start the application task.  On host, start() runs one synchronous
+     * acquire_one_sample() which attempts a push → returns ESP_ERR_NO_MEM
+     * and logs the "ring buffer full" warning.  The start() call must still
+     * succeed (ESP_OK) because the drop is non-fatal. */
+    reset_application();
+
+    dsp_sample_t dummy;
+    memset(&dummy, 0, sizeof(dummy));
+    for (uint32_t i = 0; i < DSP_RING_BUF_CAPACITY; i++) {
+        dsp_ring_buf_push(&s_sh, &dummy);
+    }
+    TEST_ASSERT_EQUAL(DSP_RING_BUF_CAPACITY, dsp_ring_buf_count(&s_sh));
+
+    /* start() triggers one more push; the buffer is full → drop logged */
+    TEST_ASSERT_EQUAL(ESP_OK, dsp_application_start(&s_sh));
+    dsp_application_stop();
 }

@@ -105,6 +105,10 @@ extern void test_wifi_store_null_password_invalid_arg(void);
 extern void test_wifi_store_valid_args_fails_on_host(void);
 extern void test_wifi_set_event_cb_null_clears(void);
 extern void test_wifi_deinit_safe(void);
+/* DSP-801 additions */
+extern void test_sm_connecting_unhandled_stays_connecting(void);
+extern void test_sm_disconnected_retry_goes_connecting(void);
+extern void test_sm_disconnected_unhandled_stays_disconnected(void);
 
 /* -------------------------------------------------------------------------
  * test_dsp_mem.c
@@ -196,6 +200,11 @@ extern void test_jwt_rs256_validate_es256_alg_returns_invalid_alg(void);
 extern void test_jwt_rs256_validate_expired_returns_expired(void);
 extern void test_jwt_rs256_validate_no_exp_returns_no_exp(void);
 extern void test_jwt_rs256_validate_valid_format_host_returns_crypto(void);
+/* DSP-801 additions */
+extern void test_jwt_b64url_decode_url_safe_minus_char(void);
+extern void test_jwt_b64url_decode_url_safe_underscore_char(void);
+extern void test_jwt_b64url_decode_invalid_char_returns_negative(void);
+extern void test_jwt_b64url_decode_single_char_is_invalid(void);
 
 /* -------------------------------------------------------------------------
  * test_dsp_psk.c – disabled path (DSP-204)
@@ -249,6 +258,9 @@ extern void test_neg_apply_terminate_from_requested(void);
 extern void test_neg_apply_terminate_from_offered(void);
 extern void test_neg_apply_terminate_from_agreed(void);
 extern void test_neg_terminated_state_is_stable(void);
+/* DSP-801 additions */
+extern void test_neg_is_active_negative_index_returns_false(void);
+extern void test_neg_is_active_oob_index_returns_false(void);
 
 /* -------------------------------------------------------------------------
  * test_dsp_xfer.c
@@ -290,6 +302,10 @@ extern void test_xfer_state_persists_after_complete(void);
 extern void test_xfer_state_persists_after_fail(void);
 extern void test_xfer_completed_absorbs_start_at_slot_level(void);
 extern void test_xfer_failed_absorbs_start_at_slot_level(void);
+/* DSP-801 additions */
+extern void test_xfer_is_active_negative_index_returns_false(void);
+extern void test_xfer_is_active_oob_index_returns_false(void);
+extern void test_xfer_apply_invalid_index_returns_initial(void);
 
 /* -------------------------------------------------------------------------
  * test_dsp_catalog.c
@@ -390,6 +406,8 @@ extern void test_msg_xfer_missing_process_id_returns_missing_field(void);
 extern void test_msg_xfer_missing_dataset_returns_missing_field(void);
 extern void test_msg_xfer_valid_returns_ok(void);
 extern void test_msg_catalog_request_rejected_by_offer_validator(void);
+/* DSP-801 addition */
+extern void test_msg_common_context_empty_string_returns_missing_context(void);
 
 /* -------------------------------------------------------------------------
  * test_dsp_jsonld.c
@@ -529,6 +547,8 @@ extern void test_application_sample_raw_value_nonzero(void);
 extern void test_application_ring_buf_empty_after_stop_and_pop(void);
 extern void test_application_task_core_is_one(void);
 extern void test_application_task_stack_at_least_4096(void);
+/* DSP-801 addition */
+extern void test_application_ring_buf_full_drops_sample(void);
 
 /* dsp_ring_buf producer/consumer (DSP-504) */
 extern void test_drain_null_sh_returns_invalid_arg(void);
@@ -573,6 +593,8 @@ extern void test_neg_load_slot_not_initialized_returns_invalid_state(void);
 extern void test_xfer_load_slot_null_pid_returns_invalid_arg(void);
 extern void test_xfer_load_slot_bad_idx_returns_invalid_arg(void);
 extern void test_xfer_load_slot_not_initialized_returns_invalid_state(void);
+/* DSP-801 addition */
+extern void test_rtc_crc_mismatch_returns_invalid_crc(void);
 
 /* -------------------------------------------------------------------------
  * main
@@ -672,6 +694,9 @@ int main(void)
     RUN_TEST(test_wifi_store_valid_args_fails_on_host);
     RUN_TEST(test_wifi_set_event_cb_null_clears);
     RUN_TEST(test_wifi_deinit_safe);
+    RUN_TEST(test_sm_connecting_unhandled_stays_connecting);
+    RUN_TEST(test_sm_disconnected_retry_goes_connecting);
+    RUN_TEST(test_sm_disconnected_unhandled_stays_disconnected);
 
     /* dsp_mem */
     RUN_TEST(test_mem_budget_total_is_130kb);
@@ -757,6 +782,10 @@ int main(void)
     RUN_TEST(test_jwt_rs256_validate_expired_returns_expired);
     RUN_TEST(test_jwt_rs256_validate_no_exp_returns_no_exp);
     RUN_TEST(test_jwt_rs256_validate_valid_format_host_returns_crypto);
+    RUN_TEST(test_jwt_b64url_decode_url_safe_minus_char);
+    RUN_TEST(test_jwt_b64url_decode_url_safe_underscore_char);
+    RUN_TEST(test_jwt_b64url_decode_invalid_char_returns_negative);
+    RUN_TEST(test_jwt_b64url_decode_single_char_is_invalid);
 
     /* dsp_psk – disabled path (DSP-204) */
     RUN_TEST(test_psk_flag_is_disabled_by_default);
@@ -810,6 +839,8 @@ int main(void)
     RUN_TEST(test_neg_apply_terminate_from_offered);
     RUN_TEST(test_neg_apply_terminate_from_agreed);
     RUN_TEST(test_neg_terminated_state_is_stable);
+    RUN_TEST(test_neg_is_active_negative_index_returns_false);
+    RUN_TEST(test_neg_is_active_oob_index_returns_false);
 
     /* dsp_xfer SM + slot table + notify (DSP-405) */
     RUN_TEST(test_xfer_sm_initial_start_goes_transferring);
@@ -851,6 +882,9 @@ int main(void)
     RUN_TEST(test_xfer_state_persists_after_fail);
     RUN_TEST(test_xfer_completed_absorbs_start_at_slot_level);
     RUN_TEST(test_xfer_failed_absorbs_start_at_slot_level);
+    RUN_TEST(test_xfer_is_active_negative_index_returns_false);
+    RUN_TEST(test_xfer_is_active_oob_index_returns_false);
+    RUN_TEST(test_xfer_apply_invalid_index_returns_initial);
 
     /* dsp_catalog (DSP-401) */
     RUN_TEST(test_catalog_dataset_id_is_nonempty);
@@ -947,6 +981,7 @@ int main(void)
     RUN_TEST(test_msg_xfer_missing_dataset_returns_missing_field);
     RUN_TEST(test_msg_xfer_valid_returns_ok);
     RUN_TEST(test_msg_catalog_request_rejected_by_offer_validator);
+    RUN_TEST(test_msg_common_context_empty_string_returns_missing_context);
 
     /* dsp_jsonld_ctx (DSP-302) */
     RUN_TEST(test_jsonld_context_url_is_defined);
@@ -1076,6 +1111,7 @@ int main(void)
     RUN_TEST(test_application_ring_buf_empty_after_stop_and_pop);
     RUN_TEST(test_application_task_core_is_one);
     RUN_TEST(test_application_task_stack_at_least_4096);
+    RUN_TEST(test_application_ring_buf_full_drops_sample);
 
     /* dsp_ring_buf producer/consumer (DSP-504) */
     RUN_TEST(test_drain_null_sh_returns_invalid_arg);
@@ -1120,6 +1156,7 @@ int main(void)
     RUN_TEST(test_xfer_load_slot_null_pid_returns_invalid_arg);
     RUN_TEST(test_xfer_load_slot_bad_idx_returns_invalid_arg);
     RUN_TEST(test_xfer_load_slot_not_initialized_returns_invalid_state);
+    RUN_TEST(test_rtc_crc_mismatch_returns_invalid_crc);
 
     return UNITY_END();
 }

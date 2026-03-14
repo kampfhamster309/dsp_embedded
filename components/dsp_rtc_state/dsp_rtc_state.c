@@ -161,3 +161,10 @@ bool dsp_rtc_state_is_valid(void)
     }
     return compute_crc32(&s_store) == s_store.crc32;
 }
+
+#ifndef ESP_PLATFORM
+void dsp_rtc_state_corrupt_crc_for_testing(void)
+{
+    s_store.crc32 ^= 0xFFFFFFFFU; /* flip all bits → guaranteed mismatch */
+}
+#endif

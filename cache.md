@@ -2,10 +2,11 @@
 
 ## Current State
 
-**Last completed ticket:** DSP-706 – RAM budget audit (all 5 components within budget; doc/ram_budget.md written)
-**Next ticket:** None (all M7 tickets complete — DSP-701 through DSP-706 ✅)
+**Last completed ticket:** DSP-801 – Full unit test coverage pass (497 tests, 0 failures, 0 ignored)
+**Next ticket:** DSP-802 – Static analysis pass
 **M5 validation status:** All ACs confirmed on ESP32-S3 (2026-03-13)
 **M7 validation status:** All ACs confirmed on ESP32-S3 (2026-03-14); 52/52 integration tests pass
+**M8 status:** DSP-801 ✅ (2026-03-14)
 
 ## RAM Budget Summary (DSP-706)
 

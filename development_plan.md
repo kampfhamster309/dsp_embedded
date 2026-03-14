@@ -196,7 +196,7 @@ Agent rules (AGENTS.md) apply throughout: git commit after every ticket, create 
 
 | Ticket | Title | Description |
 |--------|-------|-------------|
-| DSP-801 | Full unit test coverage pass | Review test coverage across all modules. Add missing tests for untested branches identified during integration. |
+| DSP-801 ✅ | Full unit test coverage pass | Review test coverage across all modules. Add missing tests for untested branches identified during integration. |
 | DSP-802 | Static analysis pass | Run `cppcheck` or `clang-tidy` on the codebase. Fix all warnings of severity ≥ medium. |
 | DSP-803 | Flash-time provisioning tooling | Write a Python helper script `tools/provision.py` that flashes device certificate and PSK into NVS partitions. Document in `human_to_do.md` (requires connected hardware). |
 | DSP-804 | PSRAM support | Enable and test operation with 8 MB PSRAM behind `CONFIG_DSP_PSRAM_ENABLE`. Verify no heap corruption at the boundary. |

@@ -384,3 +384,19 @@ void test_neg_terminated_state_is_stable(void)
     TEST_ASSERT_EQUAL(DSP_NEG_STATE_TERMINATED,
                       dsp_neg_apply(idx, DSP_NEG_EVENT_TERMINATE));
 }
+
+/* -------------------------------------------------------------------------
+ * DSP-801: coverage additions – dsp_neg_is_active() out-of-bounds guard
+ * ------------------------------------------------------------------------- */
+
+void test_neg_is_active_negative_index_returns_false(void)
+{
+    reset();
+    TEST_ASSERT_FALSE(dsp_neg_is_active(-1));
+}
+
+void test_neg_is_active_oob_index_returns_false(void)
+{
+    reset();
+    TEST_ASSERT_FALSE(dsp_neg_is_active(DSP_NEG_MAX));
+}

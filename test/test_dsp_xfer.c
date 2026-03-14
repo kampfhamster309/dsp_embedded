@@ -373,3 +373,27 @@ void test_xfer_failed_absorbs_start_at_slot_level(void)
     TEST_ASSERT_EQUAL(DSP_XFER_STATE_FAILED,
                       dsp_xfer_apply(idx, DSP_XFER_EVENT_START));
 }
+
+/* -------------------------------------------------------------------------
+ * DSP-801: coverage additions – out-of-bounds guards
+ * ------------------------------------------------------------------------- */
+
+void test_xfer_is_active_negative_index_returns_false(void)
+{
+    reset_xfer();
+    TEST_ASSERT_FALSE(dsp_xfer_is_active(-1));
+}
+
+void test_xfer_is_active_oob_index_returns_false(void)
+{
+    reset_xfer();
+    TEST_ASSERT_FALSE(dsp_xfer_is_active(DSP_XFER_MAX));
+}
+
+void test_xfer_apply_invalid_index_returns_initial(void)
+{
+    /* dsp_xfer_apply() has its own bounds check (separate from get_state) */
+    reset_xfer();
+    TEST_ASSERT_EQUAL(DSP_XFER_STATE_INITIAL,
+                      dsp_xfer_apply(-1, DSP_XFER_EVENT_START));
+}

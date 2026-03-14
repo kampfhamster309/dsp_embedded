@@ -466,3 +466,23 @@ void test_xfer_load_slot_not_initialized_returns_invalid_state(void)
     TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE,
         dsp_xfer_load_slot(0, DSP_XFER_STATE_TRANSFERRING, "urn:p"));
 }
+
+/* -------------------------------------------------------------------------
+ * DSP-801: CRC mismatch detection (valid magic, corrupted CRC)
+ * ------------------------------------------------------------------------- */
+
+void test_rtc_crc_mismatch_returns_invalid_crc(void)
+{
+    reset_all();
+
+    /* Save a valid state so magic and CRC are set correctly. */
+    dsp_neg_create("urn:c:crc-test", "urn:p:crc-test");
+    TEST_ASSERT_EQUAL(ESP_OK, dsp_rtc_state_save());
+    TEST_ASSERT_TRUE(dsp_rtc_state_is_valid());
+
+    /* Corrupt the stored CRC without touching the magic sentinel. */
+    dsp_rtc_state_corrupt_crc_for_testing();
+
+    /* Restore must detect the mismatch and return INVALID_CRC. */
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_CRC, dsp_rtc_state_restore());
+}

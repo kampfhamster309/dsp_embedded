@@ -350,3 +350,38 @@ void test_wifi_deinit_safe(void)
     dsp_wifi_deinit();
     TEST_PASS();
 }
+
+/* -------------------------------------------------------------------------
+ * DSP-801: coverage additions – previously uncovered SM transitions
+ * ------------------------------------------------------------------------- */
+
+void test_sm_connecting_unhandled_stays_connecting(void)
+{
+    /* CONNECTING + RETRY (not CONNECTED or DISCONNECTED) → stay CONNECTING.
+     * Hits the break; at the end of the CONNECTING case. */
+    int retry = 0;
+    dsp_wifi_state_t next = dsp_wifi_sm_next(
+        DSP_WIFI_STATE_CONNECTING, DSP_WIFI_INPUT_RETRY, &retry, 5);
+    TEST_ASSERT_EQUAL(DSP_WIFI_STATE_CONNECTING, next);
+}
+
+void test_sm_disconnected_retry_goes_connecting(void)
+{
+    /* DISCONNECTED + RETRY → CONNECTING.
+     * The DISCONNECTED state is transient on the real driver but the SM
+     * transition is platform-agnostic and must be covered. */
+    int retry = 0;
+    dsp_wifi_state_t next = dsp_wifi_sm_next(
+        DSP_WIFI_STATE_DISCONNECTED, DSP_WIFI_INPUT_RETRY, &retry, 5);
+    TEST_ASSERT_EQUAL(DSP_WIFI_STATE_CONNECTING, next);
+}
+
+void test_sm_disconnected_unhandled_stays_disconnected(void)
+{
+    /* DISCONNECTED + CONNECTED (not RETRY) → stay DISCONNECTED.
+     * Hits the break; at the end of the DISCONNECTED case. */
+    int retry = 0;
+    dsp_wifi_state_t next = dsp_wifi_sm_next(
+        DSP_WIFI_STATE_DISCONNECTED, DSP_WIFI_INPUT_CONNECTED, &retry, 5);
+    TEST_ASSERT_EQUAL(DSP_WIFI_STATE_DISCONNECTED, next);
+}

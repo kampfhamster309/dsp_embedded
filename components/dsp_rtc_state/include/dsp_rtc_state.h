@@ -136,6 +136,14 @@ void dsp_rtc_state_clear(void);
  */
 bool dsp_rtc_state_is_valid(void);
 
+#ifndef ESP_PLATFORM
+/**
+ * @brief Corrupt the stored CRC32 to force a CRC mismatch on the next
+ *        dsp_rtc_state_restore() call.  Host / unit-test builds only.
+ */
+void dsp_rtc_state_corrupt_crc_for_testing(void);
+#endif
+
 #ifdef __cplusplus
 }
 #endif
