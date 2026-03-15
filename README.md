@@ -358,6 +358,7 @@ dsp_embedded/
 
 | File | Contents |
 |------|----------|
+| [example_setup.md](example_setup.md) | End-to-end setup guide: DHT20 wiring, configuration, build, flash, and DSP walkthrough |
 | [target.md](target.md) | Project description, hardware target, design constraints |
 | [development_plan.md](development_plan.md) | Milestone plan and ticket status |
 | [doc/deviation_log.md](doc/deviation_log.md) | Spec deviations with rationale (DEV-001–DEV-007) |
