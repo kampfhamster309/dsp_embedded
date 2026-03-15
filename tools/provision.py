@@ -351,6 +351,17 @@ def main() -> None:
         else:
             output_bin = tmp_dir / "dsp_certs.bin"
 
+        # Print NVS key summary so --dry-run output is self-documenting
+        _info("NVS partition layout (offset 0x{:06x}, {:d} KB):".format(
+            PARTITION_OFFSET, PARTITION_SIZE // 1024))
+        _info("  namespace='dsp_identity'  key='cert_der'  ({} bytes)".format(cert_size))
+        _info("  namespace='dsp_identity'  key='key_der'   ({} bytes)".format(key_size))
+        if psk_id_bytes is not None:
+            _info("  namespace='dsp_psk'       key='identity'  ({} bytes)".format(
+                len(psk_id_bytes)))
+            _info("  namespace='dsp_psk'       key='psk_key'   ({} bytes)".format(
+                len(psk_key_bytes)))
+
         _write_csv(csv_path, cert_path, key_path,
                    psk_id_bytes, psk_key_bytes, tmp_dir)
 
