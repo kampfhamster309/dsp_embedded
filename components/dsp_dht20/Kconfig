@@ -1,0 +1,29 @@
+menu "DHT20 Sensor (dsp_dht20)"
+
+    config DSP_DHT20_SDA_PIN
+        int "DHT20 I2C SDA GPIO number"
+        default 8
+        range 0 48
+        help
+            GPIO number for the I2C SDA line of the DHT20 sensor.
+            Requires an external 4.7 kΩ pull-up resistor to 3.3 V.
+            Default GPIO 8 is available on most ESP32-S3 development boards.
+
+    config DSP_DHT20_SCL_PIN
+        int "DHT20 I2C SCL GPIO number"
+        default 9
+        range 0 48
+        help
+            GPIO number for the I2C SCL line of the DHT20 sensor.
+            Requires an external 4.7 kΩ pull-up resistor to 3.3 V.
+            Default GPIO 9 is available on most ESP32-S3 development boards.
+
+    config DSP_DHT20_I2C_PORT
+        int "I2C peripheral port number (0 or 1)"
+        default 0
+        range 0 1
+        help
+            ESP32-S3 I2C peripheral index.  Use 0 unless port 0 is already
+            occupied by another component.
+
+endmenu

@@ -296,6 +296,34 @@
 #endif
 
 /* -------------------------------------------------------------------------
+ * DHT20 sensor pin and port defaults (host build only; ESP builds use Kconfig)
+ * ------------------------------------------------------------------------- */
+
+/**
+ * CONFIG_DSP_DHT20_SDA_PIN
+ * GPIO number for the DHT20 I2C SDA line.  Ignored on host builds.
+ */
+#ifndef CONFIG_DSP_DHT20_SDA_PIN
+#define CONFIG_DSP_DHT20_SDA_PIN 8
+#endif
+
+/**
+ * CONFIG_DSP_DHT20_SCL_PIN
+ * GPIO number for the DHT20 I2C SCL line.  Ignored on host builds.
+ */
+#ifndef CONFIG_DSP_DHT20_SCL_PIN
+#define CONFIG_DSP_DHT20_SCL_PIN 9
+#endif
+
+/**
+ * CONFIG_DSP_DHT20_I2C_PORT
+ * I2C peripheral index (0 or 1).  Ignored on host builds.
+ */
+#ifndef CONFIG_DSP_DHT20_I2C_PORT
+#define CONFIG_DSP_DHT20_I2C_PORT 0
+#endif
+
+/* -------------------------------------------------------------------------
  * Static assertions – catch invalid combinations at compile time
  *
  * Note: CONFIG_DSP_DAPS_GATEWAY_URL is a string and cannot be tested in

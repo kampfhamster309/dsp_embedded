@@ -550,6 +550,29 @@ extern void test_application_task_stack_at_least_4096(void);
 /* DSP-801 addition */
 extern void test_application_ring_buf_full_drops_sample(void);
 
+/* -------------------------------------------------------------------------
+ * test_dsp_dht20.c – DHT20 sensor driver (host stub path)
+ * ------------------------------------------------------------------------- */
+extern void test_dht20_init_null_out_returns_invalid_arg(void);
+extern void test_dht20_init_returns_ok(void);
+extern void test_dht20_init_produces_non_null_handle(void);
+extern void test_dht20_read_null_handle_returns_invalid_arg(void);
+extern void test_dht20_read_null_out_returns_invalid_arg(void);
+extern void test_dht20_read_returns_ok(void);
+extern void test_dht20_read_temperature_in_range(void);
+extern void test_dht20_read_humidity_in_range(void);
+extern void test_dht20_read_stub_temperature_value(void);
+extern void test_dht20_read_stub_humidity_value(void);
+extern void test_dht20_temp_raw_encoding_nonzero(void);
+extern void test_dht20_hum_raw_encoding_nonzero(void);
+extern void test_dht20_temp_raw_roundtrip(void);
+extern void test_dht20_hum_raw_roundtrip(void);
+extern void test_dht20_deinit_null_safe(void);
+extern void test_dht20_deinit_valid_handle_safe(void);
+extern void test_dht20_ch_temp_is_zero(void);
+extern void test_dht20_ch_hum_is_one(void);
+extern void test_dht20_i2c_addr_is_0x38(void);
+
 /* dsp_ring_buf producer/consumer (DSP-504) */
 extern void test_drain_null_sh_returns_invalid_arg(void);
 extern void test_drain_null_buf_returns_invalid_arg(void);
@@ -1112,6 +1135,27 @@ int main(void)
     RUN_TEST(test_application_task_core_is_one);
     RUN_TEST(test_application_task_stack_at_least_4096);
     RUN_TEST(test_application_ring_buf_full_drops_sample);
+
+    /* dsp_dht20 – DHT20 sensor driver (host stub path) */
+    RUN_TEST(test_dht20_init_null_out_returns_invalid_arg);
+    RUN_TEST(test_dht20_init_returns_ok);
+    RUN_TEST(test_dht20_init_produces_non_null_handle);
+    RUN_TEST(test_dht20_read_null_handle_returns_invalid_arg);
+    RUN_TEST(test_dht20_read_null_out_returns_invalid_arg);
+    RUN_TEST(test_dht20_read_returns_ok);
+    RUN_TEST(test_dht20_read_temperature_in_range);
+    RUN_TEST(test_dht20_read_humidity_in_range);
+    RUN_TEST(test_dht20_read_stub_temperature_value);
+    RUN_TEST(test_dht20_read_stub_humidity_value);
+    RUN_TEST(test_dht20_temp_raw_encoding_nonzero);
+    RUN_TEST(test_dht20_hum_raw_encoding_nonzero);
+    RUN_TEST(test_dht20_temp_raw_roundtrip);
+    RUN_TEST(test_dht20_hum_raw_roundtrip);
+    RUN_TEST(test_dht20_deinit_null_safe);
+    RUN_TEST(test_dht20_deinit_valid_handle_safe);
+    RUN_TEST(test_dht20_ch_temp_is_zero);
+    RUN_TEST(test_dht20_ch_hum_is_one);
+    RUN_TEST(test_dht20_i2c_addr_is_0x38);
 
     /* dsp_ring_buf producer/consumer (DSP-504) */
     RUN_TEST(test_drain_null_sh_returns_invalid_arg);
