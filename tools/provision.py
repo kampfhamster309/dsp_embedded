@@ -413,7 +413,9 @@ def main() -> None:
         if not args.output:
             # The file is in tmp_dir which will be cleaned up; copy it out
             import shutil
-            stable = Path(tempfile.mktemp(suffix="_dsp_certs.bin"))
+            fd, stable_path = tempfile.mkstemp(suffix="_dsp_certs.bin")
+            os.close(fd)
+            stable = Path(stable_path)
             shutil.copy2(output_bin, stable)
             output_bin = stable
 
